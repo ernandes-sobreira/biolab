@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penso, Logo Faço Estatística!</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, get }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const cfg = {
+    apiKey:"AIzaSyCiHRozGb7oOabUdz-RtZvF7Uag0otYMOA",
+    authDomain:"biolab-unemat.firebaseapp.com",
+    databaseURL:"https://biolab-unemat-default-rtdb.firebaseio.com",
+    projectId:"biolab-unemat",
+    storageBucket:"biolab-unemat.firebasestorage.app",
+    messagingSenderId:"1044664862619",
+    appId:"1:1044664862619:web:363f9c714f6aa179c2833e"
+  };
+  const app = initializeApp(cfg);
+  const db  = getDatabase(app);
+  window._db=db; window._ref=ref; window._set=set;
+  window._onValue=onValue; window._remove=remove; window._get=get;
+  document.dispatchEvent(new Event('fb-ready'));
+</script>
+
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root{
+  --bg:#0b0e14;
+  --surface:#131720;
+  --surface2:#1b2130;
+  --border:#252d3d;
+  --border2:#2e3a50;
+  --text:#e8edf5;
+  --text2:#8b96aa;
+  --text3:#4a5568;
+  --accent:#f5a623;
+  --accent2:#e8851a;
+  --green:#27c97e;
+  --blue:#4a9eff;
+  --pink:#f05a7e;
+  --purple:#a78bfa;
+  --teal:#2dd4bf;
+  --red:#f87171;
+  --font-h:'Playfair Display',Georgia,serif;
+  --font-b:'Barlow',sans-serif;
+  --font-c:'Barlow Condensed',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --r:12px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* subtle grid bg */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(74,158,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(74,158,255,.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;position:relative;z-index:1}
+.screen.active{display:flex;flex-direction:column}
+
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+#sc-login{
+  align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 30% 20%, rgba(74,158,255,.08) 0%, transparent 60%),
+             radial-gradient(ellipse at 80% 80%, rgba(245,166,35,.06) 0%, transparent 50%);
+  padding:24px;
+}
+
+.login-wrap{width:100%;max-width:460px}
+
+.login-hero{text-align:center;margin-bottom:36px}
+.login-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  font-size:34px;margin-bottom:18px;
+  box-shadow:0 0 40px rgba(245,166,35,.3);
+  animation:logo-pulse 3s ease-in-out infinite;
+}
+@keyframes logo-pulse{0%,100%{box-shadow:0 0 30px rgba(245,166,35,.3)}50%{box-shadow:0 0 60px rgba(245,166,35,.5)}}
+
+.login-title{
+  font-family:var(--font-h);font-size:28px;font-weight:900;
+  line-height:1.1;color:var(--text);letter-spacing:-.5px;
+}
+.login-title em{color:var(--accent);font-style:italic}
+.login-sub{margin-top:8px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m)}
+
+.login-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:32px;
+  box-shadow:var(--shadow);
+}
+
+.role-pills{display:flex;gap:8px;margin-bottom:24px}
+.rpill{
+  flex:1;padding:10px 16px;border-radius:8px;
+  border:1.5px solid var(--border2);background:transparent;
+  color:var(--text2);font-family:var(--font-b);font-weight:600;font-size:13px;
+  cursor:pointer;transition:all .2s;text-align:center;
+}
+.rpill:hover{border-color:var(--accent);color:var(--text)}
+.rpill.active{border-color:var(--accent);background:rgba(245,166,35,.12);color:var(--accent)}
+
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);margin-bottom:6px}
+.fld input,.fld select{
+  width:100%;padding:11px 14px;
+  background:var(--surface2);border:1.5px solid var(--border2);border-radius:8px;
+  font-family:var(--font-b);font-size:14px;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.fld input:focus,.fld select:focus{border-color:var(--accent)}
+.fld input::placeholder{color:var(--text3)}
+
+.btn-enter{
+  width:100%;padding:13px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;font-family:var(--font-c);font-size:16px;font-weight:800;
+  letter-spacing:.5px;cursor:pointer;transition:all .2s;margin-top:4px;
+}
+.btn-enter:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(245,166,35,.4)}
+
+.login-err{font-size:12px;color:var(--red);text-align:center;margin-top:10px;min-height:16px;font-family:var(--font-m)}
+
+/* ══════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════ */
+#sc-app{flex-direction:column}
+
+.app-bar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;flex-shrink:0;
+}
+.app-bar-logo{
+  font-family:var(--font-h);font-size:18px;font-weight:900;color:var(--text);
+  letter-spacing:-.3px;display:flex;align-items:center;gap:10px;
+}
+.app-bar-logo span{color:var(--accent);font-style:italic}
+.app-bar-logo .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  animation:blink-g 1.5s infinite;flex-shrink:0;
+}
+@keyframes blink-g{0%,100%{opacity:1}50%{opacity:.2}}
+
+.app-bar-right{display:flex;align-items:center;gap:10px}
+.chip{
+  padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
+  font-family:var(--font-m);letter-spacing:.5px;
+}
+.chip-name{background:rgba(255,255,255,.08);border:1px solid var(--border2);color:var(--text2)}
+.chip-role{background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);color:var(--accent)}
+.chip-sala{background:rgba(39,201,126,.1);border:1px solid rgba(39,201,126,.3);color:var(--green)}
+.btn-exit{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-b);transition:all .2s}
+.btn-exit:hover{border-color:var(--red);color:var(--red)}
+
+.app-body{display:flex;flex:1;overflow:hidden;height:calc(100vh - 53px)}
+
+/* SIDEBAR */
+.sidebar{
+  width:230px;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;
+}
+.sb-section{padding:16px 18px 6px;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m)}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;color:var(--text2);cursor:pointer;
+  transition:all .15s;font-size:13px;font-weight:500;
+  border-left:3px solid transparent;
+}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--text);background:rgba(245,166,35,.08);border-left-color:var(--accent)}
+.sb-item .si{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.sb-item .badge{margin-left:auto;background:var(--accent);color:#000;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;font-family:var(--font-m)}
+
+.sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);font-family:var(--font-m)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* ══════════════════════════════════════════
+   PANELS
+══════════════════════════════════════════ */
+.panel{display:none;animation:fadeUp .3s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.ph{margin-bottom:24px}
+.ph-title{font-family:var(--font-h);font-size:30px;font-weight:900;color:var(--text);line-height:1.1}
+.ph-title em{color:var(--accent);font-style:italic}
+.ph-sub{margin-top:6px;font-size:13px;color:var(--text2)}
+
+/* ══════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px}
+.card+.card{margin-top:14px}
+.card-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ══════════════════════════════════════════
+   INPUTS / BUTTONS
+══════════════════════════════════════════ */
+.inp{
+  width:100%;padding:10px 13px;
+  background:var(--surface2);border:1.5px solid var(--border2);border-radius:8px;
+  font-family:var(--font-b);font-size:13px;color:var(--text);outline:none;
+  transition:border-color .2s;
+}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--text3)}
+textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
+
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font-b);font-weight:600;font-size:13px;transition:all .2s;letter-spacing:.3px}
+.btn-gold{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(245,166,35,.4)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-green{background:rgba(39,201,126,.15);border:1.5px solid var(--green);color:var(--green)}
+.btn-green:hover{background:rgba(39,201,126,.25)}
+.btn-red{background:rgba(248,113,113,.1);border:1.5px solid var(--red);color:var(--red)}
+.btn-red:hover{background:rgba(248,113,113,.2)}
+.btn-blue{background:rgba(74,158,255,.15);border:1.5px solid var(--blue);color:var(--blue)}
+.btn-blue:hover{background:rgba(74,158,255,.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* ══════════════════════════════════════════
+   SALA / CÓDIGO
+══════════════════════════════════════════ */
+.sala-code-display{
+  font-family:var(--font-m);font-size:72px;font-weight:600;
+  color:var(--accent);letter-spacing:16px;text-align:center;
+  text-shadow:0 0 40px rgba(245,166,35,.4);
+  animation:logo-pulse 3s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════
+   LIVE BANNER
+══════════════════════════════════════════ */
+.live-banner{
+  background:linear-gradient(135deg,rgba(39,201,126,.12),rgba(39,201,126,.06));
+  border:1px solid rgba(39,201,126,.3);border-radius:10px;
+  padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:18px;
+}
+.ldot{width:9px;height:9px;border-radius:50%;background:var(--green);flex-shrink:0;animation:blink-g 1s infinite}
+.ltext{font-size:14px;font-weight:700;color:var(--text)}
+.lsub{font-size:12px;color:var(--text2)}
+
+/* ══════════════════════════════════════════
+   SECTION TABS
+══════════════════════════════════════════ */
+.stabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.stab{
+  padding:7px 16px;border-radius:6px 6px 0 0;
+  border:1px solid transparent;border-bottom:none;
+  background:transparent;cursor:pointer;font-family:var(--font-b);font-size:12px;font-weight:600;
+  color:var(--text3);transition:all .2s;position:relative;top:1px;
+}
+.stab:hover{color:var(--text2)}
+.stab.active{border-color:var(--border);background:var(--surface2);color:var(--text)}
+.stabp{display:none}
+.stabp.active{display:block}
+
+/* ══════════════════════════════════════════
+   STAT BOXES
+══════════════════════════════════════════ */
+.stat-box{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  padding:16px;text-align:center;position:relative;overflow:hidden;
+}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.stat-box.c-gold::before{background:var(--accent)}
+.stat-box.c-blue::before{background:var(--blue)}
+.stat-box.c-green::before{background:var(--green)}
+.stat-box.c-pink::before{background:var(--pink)}
+.stat-box.c-purple::before{background:var(--purple)}
+.stat-box.c-teal::before{background:var(--teal)}
+.stat-val{font-family:var(--font-m);font-size:26px;font-weight:600;margin:4px 0}
+.stat-sym{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m)}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:3px}
+
+/* info tooltip */
+.tip-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;
+  background:rgba(245,166,35,.2);border:1px solid rgba(245,166,35,.4);
+  color:var(--accent);font-size:9px;font-weight:700;font-family:var(--font-m);
+  cursor:pointer;border:none;flex-shrink:0;position:relative;vertical-align:middle;margin-left:4px;
+}
+.tip-btn::after{
+  content:attr(data-tip);
+  position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1px solid var(--border2);color:var(--text);
+  font-size:11px;line-height:1.6;padding:10px 14px;border-radius:8px;
+  width:240px;text-align:left;white-space:normal;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+  font-family:var(--font-b);font-weight:400;z-index:300;
+  box-shadow:var(--shadow);
+}
+.tip-btn:hover::after{opacity:1}
+
+/* ══════════════════════════════════════════
+   TABLES
+══════════════════════════════════════════ */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;background:var(--surface2);color:var(--text3);font-family:var(--font-m);font-size:9px;letter-spacing:2px;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--border)}
+.tbl td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr{animation:rowIn .25s ease}
+@keyframes rowIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+
+/* ══════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════ */
+.chart-wrap{position:relative;background:var(--surface2);border-radius:10px;padding:16px}
+canvas{display:block;width:100%!important}
+.chart-didactic{
+  margin-top:14px;padding:14px;border-radius:8px;
+  background:rgba(245,166,35,.06);border-left:3px solid var(--accent);
+}
+.chart-didactic h4{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase;font-family:var(--font-c)}
+.did-row{display:flex;gap:10px;margin-bottom:7px;align-items:flex-start}
+.did-sym{font-family:var(--font-m);font-size:11px;font-weight:600;color:var(--accent);min-width:40px;flex-shrink:0;margin-top:1px}
+.did-txt{font-size:12px;color:var(--text2);line-height:1.55}
+.did-txt strong{color:var(--text)}
+
+/* export bar */
+.export-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* ══════════════════════════════════════════
+   MÓDULOS DIDÁTICOS
+══════════════════════════════════════════ */
+.concept-card{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
+  padding:20px;cursor:pointer;transition:all .2s;
+}
+.concept-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cc-icon{font-size:32px;margin-bottom:10px}
+.cc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.cc-sub{font-size:12px;color:var(--text2);line-height:1.5}
+.cc-tag{display:inline-block;margin-top:8px;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 9px;border-radius:10px;font-family:var(--font-m)}
+
+/* definition box */
+.def-box{
+  background:var(--surface2);border-radius:10px;padding:20px;
+  border-left:4px solid var(--accent);margin-bottom:14px;
+}
+.def-term{font-family:var(--font-h);font-size:20px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.def-body{font-size:13px;color:var(--text2);line-height:1.7}
+.def-body strong{color:var(--text)}
+.def-example{
+  margin-top:10px;padding:10px 14px;border-radius:6px;
+  background:rgba(39,201,126,.08);border:1px solid rgba(39,201,126,.2);
+  font-size:12px;color:var(--green);
+}
+.def-example::before{content:'🌿 Exemplo biológico: ';font-weight:700}
+
+/* modal overlay */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:none;align-items:center;justify-content:center;padding:24px;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--surface);border:1px solid var(--border2);border-radius:16px;
+  padding:32px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;
+  position:relative;box-shadow:0 24px 80px rgba(0,0,0,.6);
+  animation:modalIn .3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-close{
+  position:absolute;top:14px;right:14px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:6px;
+  padding:4px 10px;cursor:pointer;color:var(--text2);font-size:13px;
+  font-family:var(--font-b);transition:all .2s;
+}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+
+/* ══════════════════════════════════════════
+   JORNADA DA PERGUNTA CIENTÍFICA
+══════════════════════════════════════════ */
+.journey-track{
+  display:flex;flex-direction:column;gap:0;position:relative;
+}
+.journey-track::before{
+  content:'';position:absolute;left:23px;top:40px;bottom:40px;width:2px;
+  background:linear-gradient(180deg,var(--accent),var(--blue),var(--green),var(--purple),var(--pink));
+  border-radius:2px;
+}
+.journey-step{
+  display:flex;gap:16px;align-items:flex-start;padding:10px 0;
+  position:relative;
+}
+.journey-step-num{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;z-index:1;
+  border:2px solid var(--border2);background:var(--surface);
+  transition:all .3s;
+}
+.journey-step.done .journey-step-num{
+  border-color:var(--green);background:rgba(39,201,126,.15);
+  box-shadow:0 0 20px rgba(39,201,126,.3);
+}
+.journey-step.active .journey-step-num{
+  border-color:var(--accent);background:rgba(245,166,35,.15);
+  box-shadow:0 0 20px rgba(245,166,35,.3);
+  animation:logo-pulse 2s infinite;
+}
+.journey-step-body{flex:1;padding-bottom:20px}
+.journey-step-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.journey-step-sub{font-size:12px;color:var(--text2);margin-bottom:10px}
+.journey-step-content{display:none}
+.journey-step.active .journey-step-content{display:block}
+
+/* progress bar */
+.progress-bar{
+  height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-bottom:8px;
+}
+.progress-fill{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--accent),var(--green));
+  transition:width .6s cubic-bezier(.16,1,.3,1);
+}
+
+/* ai feedback box */
+.ai-box{
+  background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.25);
+  border-radius:10px;padding:14px;font-size:13px;color:var(--text);
+  line-height:1.7;font-family:var(--font-b);min-height:60px;
+}
+.ai-thinking{display:flex;align-items:center;gap:10px;color:var(--blue);font-size:12px;font-family:var(--font-m)}
+.dots span{
+  display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue);
+  margin:0 2px;animation:bounce .9s infinite;
+}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* vote bar */
+.vote-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.vb-label{font-size:13px;font-weight:600;min-width:80px}
+.vb-track{flex:1;height:30px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.vb-fill{height:100%;border-radius:6px;transition:width .7s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;font-family:var(--font-m);min-width:0}
+.vb-count{font-family:var(--font-m);font-size:12px;color:var(--text2);min-width:30px;text-align:right}
+
+/* ══════════════════════════════════════════
+   STUDENT SIDE
+══════════════════════════════════════════ */
+.student-wait{text-align:center;padding:70px 20px}
+.sw-icon{font-size:64px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.sw-title{font-family:var(--font-h);font-size:22px;font-weight:700;color:var(--text2);margin-top:16px}
+.sw-sub{font-size:13px;color:var(--text3);margin-top:6px}
+
+.s-act-card{max-width:620px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.s-act-head{background:var(--surface2);padding:20px 24px;border-bottom:1px solid var(--border)}
+.s-act-type{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);font-family:var(--font-m);margin-bottom:6px}
+.s-act-q{font-family:var(--font-h);font-size:20px;font-weight:700;color:var(--text);line-height:1.3}
+.s-act-body{padding:24px}
+
+.s-inp{
+  width:100%;padding:13px 16px;
+  background:var(--surface2);border:2px solid var(--border2);border-radius:10px;
+  font-family:var(--font-b);font-size:16px;color:var(--text);outline:none;transition:border-color .2s;
+}
+.s-inp:focus{border-color:var(--accent)}
+
+.mc-opts{display:flex;flex-direction:column;gap:9px}
+.mc-opt{
+  padding:13px 18px;border-radius:10px;
+  border:1.5px solid var(--border2);background:var(--surface2);
+  color:var(--text);font-family:var(--font-b);font-size:14px;font-weight:500;
+  text-align:left;cursor:pointer;transition:all .2s;
+}
+.mc-opt:hover{border-color:var(--text2);background:var(--surface)}
+.mc-opt.sel{border-color:var(--accent);background:rgba(245,166,35,.1);font-weight:700;color:var(--accent)}
+
+.s-submit{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#000;font-family:var(--font-c);font-size:16px;font-weight:800;
+  cursor:pointer;transition:all .2s;margin-top:14px;letter-spacing:.5px;
+}
+.s-submit:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 20px rgba(245,166,35,.4)}
+.s-submit:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.s-success{
+  text-align:center;padding:28px;
+  background:rgba(39,201,126,.08);border:1.5px solid rgba(39,201,126,.25);border-radius:12px;
+}
+.s-success-icon{font-size:48px;margin-bottom:10px}
+.s-success-txt{font-family:var(--font-h);font-size:18px;font-weight:700;color:var(--green)}
+.s-success-sub{font-size:13px;color:var(--text2);margin-top:5px}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:var(--surface);border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  padding:11px 18px;border-radius:8px;font-size:12px;font-family:var(--font-m);
+  color:var(--text);max-width:280px;
+  transform:translateY(14px);opacity:0;transition:all .3s;
+  box-shadow:var(--shadow);
+}
+.toast.show{transform:none;opacity:1}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — BOTTOM NAV NO MOBILE
+══════════════════════════════════════════ */
+@media(max-width:900px){
+  .app-body{flex-direction:column-reverse}
+  .sidebar{
+    width:100%;height:auto;flex-direction:row;
+    overflow-x:auto;overflow-y:hidden;
+    border-right:none;border-top:1px solid var(--border);
+    flex-shrink:0;padding:0;
+    -webkit-overflow-scrolling:touch;
+  }
+  .sb-section,.sb-footer{display:none}
+  .sb-item{
+    flex-direction:column;padding:8px 12px;
+    border-left:none;border-bottom:3px solid transparent;
+    font-size:10px;white-space:nowrap;min-width:60px;
+    justify-content:center;
+  }
+  .sb-item .si{font-size:20px;margin-bottom:2px}
+  .sb-item.active{border-bottom-color:var(--accent);background:rgba(245,166,35,.08)}
+  .sb-item .badge{display:none}
+  .main{
+    padding:14px;
+    flex:1;
+    height:calc(100vh - 53px - 70px);
+  }
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .app-bar-logo span{font-size:14px}
+  .chip-name,.chip-sala{display:none}
+}
+.credits-footer{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:rgba(11,14,20,.92);border-top:1px solid var(--border);
+  padding:6px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:10px;font-family:var(--font-m);color:var(--text3);
+  backdrop-filter:blur(8px);
+  pointer-events:none;
+}
+.credits-footer strong{color:var(--accent)}
+.credits-footer .ai-badge{
+  background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);
+  border-radius:10px;padding:2px 8px;font-size:9px;
+  color:var(--accent);letter-spacing:.5px;pointer-events:none;
+}
+/* push main content up so footer doesn't overlap */
+#sc-app .main{padding-bottom:36px}
+@media(max-width:900px){
+  .credits-footer{font-size:9px;padding:4px 10px}
+  /* on mobile the bottom nav is already there — stack footer above it */
+  .credits-footer{bottom:70px}
+  #sc-app .main{padding-bottom:16px}
+}
+.recent-room-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:9px 14px;margin-bottom:6px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:8px;
+  cursor:pointer;transition:all .2s;font-family:var(--font-b);text-align:left;
+}
+.recent-room-btn:hover{border-color:var(--accent);background:rgba(245,166,35,.08)}
+.recent-room-code{font-family:var(--font-m);font-size:16px;font-weight:700;color:var(--accent);letter-spacing:4px}
+.recent-room-meta{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="sc-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-hero">
+      <div class="login-icon">📐</div>
+      <div class="login-title"><em>Penso,</em><br>Logo Faço Estatística!</div>
+      <div class="login-sub">FACAB · UNEMAT · Cáceres-MT</div>
+    </div>
+    <div class="login-card">
+      <div class="role-pills">
+        <button class="rpill active" onclick="setRole('professor')">👩‍🏫 Professor</button>
+        <button class="rpill" onclick="setRole('aluno')">🎓 Aluno</button>
+        <button class="rpill" onclick="setRole('solo')">🧑‍💻 Solo</button>
+      </div>
+
+      <div class="fld"><label>Seu nome</label><input id="li-name" type="text" placeholder="Ex: Ernandes Sobreira" autocomplete="off"></div>
+
+      <!-- PROFESSOR: opção de retomar sala -->
+      <div id="fld-rejoin" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <label style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m)">Retomar sala existente?</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text2)">
+            <input type="checkbox" id="chk-rejoin" onchange="toggleRejoin()" style="accent-color:var(--accent)"> Sim
+          </label>
+        </div>
+        <div id="rejoin-field" style="display:none">
+          <input id="li-rejoin-code" type="text" placeholder="Código da sala anterior" maxlength="4"
+            style="width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--accent);border-radius:8px;font-family:var(--font-m);font-size:22px;letter-spacing:8px;text-align:center;color:var(--accent);outline:none">
+        </div>
+        <!-- salas recentes salvas no navegador -->
+        <div id="recent-rooms" style="margin-top:10px"></div>
+      </div>
+
+      <!-- ALUNO: código da sala -->
+      <div class="fld" id="fld-code" style="display:none">
+        <label>Código da sala</label>
+        <input id="li-code" type="text" placeholder="4 dígitos" maxlength="4" style="letter-spacing:8px;font-size:24px;text-align:center;font-family:var(--font-m);width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);outline:none">
+      </div>
+
+      <button class="btn-enter" onclick="doLogin()">Entrar na aula →</button>
+      <div class="login-err" id="li-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="sc-app" class="screen">
+  <header class="app-bar">
+    <div class="app-bar-logo">
+      <div class="dot"></div>
+      <span><em>Penso,</em> Logo Faço Estatística!</span>
+    </div>
+    <div class="app-bar-right">
+      <span class="chip chip-name" id="h-name">—</span>
+      <span class="chip chip-role" id="h-role">—</span>
+      <span class="chip chip-sala" id="h-sala">—</span>
+      <button class="btn-exit" onclick="doLogout()">Sair</button>
+    </div>
+  </header>
+  <div class="app-body">
+    <nav class="sidebar" id="sidebar"></nav>
+    <main class="main" id="main-panel"></main>
+  </div>
+</div>
+
+<!-- Modal overlay -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕ fechar</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════ RODAPÉ CRÉDITOS ═══════════════ -->
+<div class="credits-footer">
+  <span>© Idealizado por <strong>Prof. Dr. Ernandes Sobreira Oliveira Junior</strong> · UNEMAT · Cáceres-MT</span>
+  <span class="ai-badge">✦ Moldado com IA</span>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   GLOBAL STATE
+═══════════════════════════════════════════════ */
+const S={
+  role:'professor', name:'', sala:'',
+  activePanel:'', activity:null,
+  myVote:null, dragAnswers:{},
+  unsubs:[], journeyStep:0,
+  selectedMC:null,
+};
+
+let db,_ref,_set,_onValue,_remove,_get;
+document.addEventListener('fb-ready',()=>{
+  db=window._db;_ref=window._ref;_set=window._set;
+  _onValue=window._onValue;_remove=window._remove;_get=window._get;
+});
+
+/* ═══════════════════════════════════════════════
+   AUTH + SALAS RECENTES
+═══════════════════════════════════════════════ */
+function saveRoom(sala,name){
+  try{
+    let r=JSON.parse(localStorage.getItem('plstat_rooms')||'[]');
+    r=r.filter(x=>x.sala!==sala);
+    r.unshift({sala,name,date:new Date().toLocaleDateString('pt-BR'),ts:Date.now()});
+    localStorage.setItem('plstat_rooms',JSON.stringify(r.slice(0,5)));
+  }catch(e){}
+}
+
+function loadRecentRooms(){
+  try{
+    const rooms=JSON.parse(localStorage.getItem('plstat_rooms')||'[]');
+    const el=document.getElementById('recent-rooms');
+    if(!el)return;
+    if(!rooms.length){el.innerHTML='<div style="font-size:11px;color:var(--text3)">Nenhuma sala recente.</div>';return;}
+    el.innerHTML=`<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);margin-bottom:6px">Salas recentes (clique para retomar)</div>`+
+      rooms.map(r=>`
+        <button class="recent-room-btn" onclick="useRecentRoom('${r.sala}','${r.name.replace(/'/g,"\\'")}')">
+          <div><div class="recent-room-code">${r.sala}</div>
+          <div class="recent-room-meta">${r.name} · ${r.date}</div></div>
+          <div style="font-size:11px;color:var(--text2)">retomar →</div>
+        </button>`).join('');
+  }catch(e){}
+}
+
+function useRecentRoom(sala,name){
+  document.getElementById('chk-rejoin').checked=true;
+  toggleRejoin();
+  document.getElementById('li-rejoin-code').value=sala;
+  if(!document.getElementById('li-name').value)document.getElementById('li-name').value=name;
+}
+
+function toggleRejoin(){
+  const chk=document.getElementById('chk-rejoin');
+  document.getElementById('rejoin-field').style.display=chk?.checked?'block':'none';
+}
+
+function setRole(r){
+  S.role=r;
+  document.querySelectorAll('.rpill').forEach((p,i)=>{
+    p.classList.toggle('active',(i===0&&r==='professor')||(i===1&&r==='aluno')||(i===2&&r==='solo'));
+  });
+  document.getElementById('fld-code').style.display=r==='aluno'?'block':'none';
+  const rejDiv=document.getElementById('fld-rejoin');
+  if(rejDiv)rejDiv.style.display=r==='professor'?'block':'none';
+  if(r==='professor')loadRecentRooms();
+}
+
+async function doLogin(){
+  const name=document.getElementById('li-name').value.trim();
+  const err=document.getElementById('li-err');
+  err.textContent='';
+  if(!name){err.textContent='Digite seu nome.';return;}
+
+  // SOLO MODE
+  if(S.role==='solo'){S.sala='SOLO';S.name=name;launchApp();return;}
+
+  if(!window._db){err.textContent='Firebase ainda carregando, aguarde...';return;}
+
+  if(S.role==='professor'){
+    const rejoin=document.getElementById('chk-rejoin')?.checked;
+    if(rejoin){
+      // RETOMAR sala existente
+      const code=document.getElementById('li-rejoin-code').value.trim();
+      if(!code||code.length!==4){err.textContent='Digite o código de 4 dígitos.';return;}
+      const snap=await _get(_ref(db,`plstat/${code}`));
+      if(!snap.exists()){err.textContent='Sala não encontrada. Verifique o código.';return;}
+      S.sala=code;S.name=name;
+      await _set(_ref(db,`plstat/${S.sala}/professor`),name);
+      saveRoom(S.sala,name);
+      launchApp();
+      setTimeout(()=>showToast(`✅ Sala ${code} retomada com sucesso!`),500);
+    } else {
+      // Nova sala
+      S.sala=String(Math.floor(1000+Math.random()*9000));S.name=name;
+      await _set(_ref(db,`plstat/${S.sala}`),{professor:name,created:Date.now(),activity:null});
+      saveRoom(S.sala,name);
+      launchApp();
+    }
+  } else {
+    const code=document.getElementById('li-code').value.trim();
+    if(!code||code.length!==4){err.textContent='Código de 4 dígitos necessário.';return;}
+    const snap=await _get(_ref(db,`plstat/${code}`));
+    if(!snap.exists()){err.textContent='Sala não encontrada.';return;}
+    S.sala=code;S.name=name;
+    await _set(_ref(db,`plstat/${S.sala}/alunos/${name}`),{joined:Date.now()});
+    launchApp();
+  }
+}
+
+function doLogout(){
+  S.unsubs.forEach(u=>u&&u());S.unsubs=[];
+  S.activity=null;S.myVote=null;
+  show('sc-login');hide('sc-app');
+}
+
+function launchApp(){
+  document.getElementById('h-name').textContent=S.name;
+  const roleLabel={professor:'Professor',aluno:'Aluno',solo:'Solo'}[S.role]||S.role;
+  document.getElementById('h-role').textContent=roleLabel;
+  document.getElementById('h-sala').textContent='sala '+S.sala;
+  hide('sc-login');show('sc-app');
+  // solo and professor both get the full shell
+  (S.role==='aluno')?buildAlunoShell():buildProfShell();
+}
+
+function show(id){document.getElementById(id).classList.add('active')}
+function hide(id){document.getElementById(id).classList.remove('active')}
+
+/* ═══════════════════════════════════════════════
+   PROFESSOR SHELL
+═══════════════════════════════════════════════ */
+function buildProfShell(){
+  document.getElementById('sidebar').innerHTML=`
+    <div class="sb-section">Aula</div>
+    <div class="sb-item active" onclick="showPanel('sala')" data-p="sala"><span class="si">🏫</span>Sala & Código</div>
+    <div class="sb-item" onclick="showPanel('criar')" data-p="criar"><span class="si">➕</span>Nova Atividade</div>
+    <div class="sb-item" onclick="showPanel('aovivo')" data-p="aovivo"><span class="si">📡</span>Ao Vivo</div>
+    <div class="sb-item" onclick="showPanel('dados')" data-p="dados"><span class="si">✏️</span>Inserir Dados</div>
+    <div class="sb-section">Módulos Didáticos</div>
+    <div class="sb-item" onclick="showPanel('pergunta')" data-p="pergunta"><span class="si">🔭</span>Pergunta Científica <span class="badge">ESPECIAL</span></div>
+    <div class="sb-item" onclick="showPanel('descritiva')" data-p="descritiva"><span class="si">📊</span>Estat. Descritiva</div>
+    <div class="sb-item" onclick="showPanel('populacao')" data-p="populacao"><span class="si">🌍</span>Pop. Amostra Censo</div>
+    <div class="sb-item" onclick="showPanel('replicas')" data-p="replicas"><span class="si">🔁</span>Réplicas</div>
+    <div class="sb-item" onclick="showPanel('testes')" data-p="testes"><span class="si">⚗️</span>Testes Estatísticos</div>
+    <div class="sb-section">Visualização</div>
+    <div class="sb-item" onclick="showPanel('graficos')" data-p="graficos"><span class="si">📈</span>Biblioteca de Gráficos</div>
+    <div class="sb-footer"><span style="color:var(--green)">●</span> ${S.role==='solo'?'Modo Solo':'Firebase'} · sala ${S.sala}</div>
+  `;
+  document.getElementById('main-panel').innerHTML=
+    `<div id="panel-sala" class="panel active">${pSala()}</div>`+
+    `<div id="panel-criar" class="panel">${pCriar()}</div>`+
+    `<div id="panel-aovivo" class="panel">${pAoVivo()}</div>`+
+    `<div id="panel-dados" class="panel">${pDadosManual()}</div>`+
+    `<div id="panel-pergunta" class="panel">${pPergunta()}</div>`+
+    `<div id="panel-descritiva" class="panel">${pDescritiva()}</div>`+
+    `<div id="panel-populacao" class="panel">${pPopulacao()}</div>`+
+    `<div id="panel-replicas" class="panel">${pReplicas()}</div>`+
+    `<div id="panel-testes" class="panel">${pTestes()}</div>`+
+    `<div id="panel-graficos" class="panel">${pGraficos()}</div>`;
+
+  listenAll();
+  setTimeout(()=>initGraficos(),300);
+}
+
+/* ═══════════════════════════════════════════════
+   PANEL: SALA
+═══════════════════════════════════════════════ */
+function pSala(){return`
+<div class="ph"><div class="ph-title"><em>Sala</em> & Código</div><div class="ph-sub">Compartilhe o código com a turma no chat da videoaula.</div></div>
+<div class="card" style="text-align:center;padding:40px">
+  <div class="sala-code-display">${S.sala}</div>
+  <div style="margin-top:14px;font-size:13px;color:var(--text2)">Alunos → abrem o arquivo → <strong>Aluno</strong> → digitam este código</div>
+</div>
+<div class="card">
+  <div class="card-label">👥 Alunos conectados</div>
+  <div id="student-list"><div style="color:var(--text3);font-size:13px">Aguardando alunos...</div></div>
+</div>
+`}
+
+/* ═══════════════════════════════════════════════
+   PANEL: CRIAR ATIVIDADE
+═══════════════════════════════════════════════ */
+let cType='numerica', dcards=[], mcOpts=[];
+function pCriar(){return`
+<div class="ph"><div class="ph-title">Nova <em>Atividade</em></div><div class="ph-sub">Configure e lance para a turma em tempo real.</div></div>
+<div class="card">
+  <div class="card-label">Tipo</div>
+  <div class="g4">
+    ${[['numerica','🔢','Numérica','Altura, peso...'],['categorica','🏷️','Categórica','Tipo sanguíneo...'],['arrastar','🃏','Arrastar','Classif. variáveis'],['multipla','✅','Múltipla','Escolha opções']].map(([k,ic,n,d])=>`
+    <div class="concept-card ${k==='numerica'?'acttype-sel':''}" id="atype-${k}" onclick="selType('${k}',this)" style="padding:14px;text-align:center">
+      <div style="font-size:28px;margin-bottom:6px">${ic}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)">${n}</div>
+      <div style="font-size:11px;color:var(--text2)">${d}</div>
+    </div>`).join('')}
+  </div>
+</div>
+<div class="card" id="cfg-card" style="margin-top:14px">${cfgNumerica()}</div>
+<div style="margin-top:14px;display:flex;gap:10px">
+  <button class="btn btn-gold" onclick="launchAct()">🚀 Lançar para a turma</button>
+  <button class="btn btn-red" onclick="encerrarAct()">⏹ Encerrar atividade</button>
+</div>
+`}
+
+function selType(t,el){
+  cType=t;dcards=[];mcOpts=[];
+  document.querySelectorAll('[id^="atype-"]').forEach(e=>{
+    e.style.borderColor='';e.style.background='';
+  });
+  el.style.borderColor='var(--accent)';el.style.background='rgba(245,166,35,.08)';
+  const cfgs={numerica:cfgNumerica,categorica:cfgCategorica,arrastar:cfgArrastar,multipla:cfgMultipla};
+  document.getElementById('cfg-card').innerHTML=cfgs[t]();
+}
+
+function cfgNumerica(){return`<div class="card-label">Pergunta Numérica</div>
+<input class="inp" id="cfg-q" placeholder="Ex: Qual é a sua altura em centímetros?" style="margin-bottom:10px">
+<input class="inp" id="cfg-unit" placeholder="Unidade (ex: cm, kg, bpm, °C)">
+<div style="margin-top:10px;font-size:12px;color:var(--text3)">Gera: Barra média±DP±EP · Boxplot · Violin · Jitter · Histograma · Tabela ao vivo</div>`}
+
+function cfgCategorica(){return`<div class="card-label">Pergunta Categórica</div>
+<input class="inp" id="cfg-q" placeholder="Ex: Qual é o seu tipo sanguíneo?">
+<div style="margin-top:10px;font-size:12px;color:var(--text3)">Gera: Nuvem de palavras · Barras de frequência · Pizza · Rosca</div>`}
+
+function cfgArrastar(){return`<div class="card-label">Arrastar & Classificar</div>
+<p style="font-size:12px;color:var(--text2);margin-bottom:12px">Adicione variáveis que os alunos vão arrastar para: Qualit. Nominal · Qualit. Ordinal · Quant. Discreta · Quant. Contínua</p>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+  <input class="inp" id="cfg-dc-new" placeholder="Nome da variável (ex: altura)" style="flex:1">
+  <button class="btn btn-ghost" onclick="addDC()">+ Adicionar</button>
+</div>
+<div id="dc-chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>`}
+
+function cfgMultipla(){return`<div class="card-label">Múltipla Escolha</div>
+<input class="inp" id="cfg-q" placeholder="Ex: A temperatura corporal é uma variável…" style="margin-bottom:10px">
+${[0,1,2,3].map(i=>`<input class="inp" id="mc-${i}" placeholder="Opção ${String.fromCharCode(65+i)}" style="margin-bottom:8px">`).join('')}`}
+
+function addDC(){
+  const inp=document.getElementById('cfg-dc-new');const v=inp.value.trim();
+  if(!v)return;if(dcards.includes(v)){showToast('Card já existe!');return;}
+  dcards.push(v);inp.value='';
+  document.getElementById('dc-chips').innerHTML=dcards.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+      ${c}<button onclick="dcards.splice(${i},1);document.getElementById('dc-chips').innerHTML=dcards.map((c2,i2)=>'TODO').join('')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px" onclick="rmDC(${i})">×</button>
+    </div>`).join('');
+}
+
+async function launchAct(){
+  const q=document.getElementById('cfg-q')?.value?.trim()||'';
+  let a={type:cType,question:q,launched:Date.now(),responses:{}};
+  if(cType==='numerica'){
+    a.unit=document.getElementById('cfg-unit')?.value?.trim()||'';
+    if(!q){showToast('⚠️ Escreva a pergunta!');return;}
+  } else if(cType==='categorica'){
+    if(!q){showToast('⚠️ Escreva a pergunta!');return;}
+  } else if(cType==='arrastar'){
+    if(dcards.length<2){showToast('⚠️ Adicione pelo menos 2 cards!');return;}
+    a.cards=dcards;
+  } else if(cType==='multipla'){
+    const opts=[0,1,2,3].map(i=>document.getElementById(`mc-${i}`)?.value?.trim()).filter(Boolean);
+    if(!q||opts.length<2){showToast('⚠️ Pergunta e 2+ opções!');return;}
+    a.options=opts;
+  }
+  // Solo mode: don't use Firebase
+  if(S.role==='solo'){S.activity=a;showPanel('aovivo');setTimeout(()=>renderLive(a),100);showToast('✅ Atividade criada (modo solo)!');return;}
+  await _set(_ref(db,`plstat/${S.sala}/activity`),a);
+  S.activity=a;showPanel('aovivo');showToast('🚀 Atividade lançada!');
+}
+
+async function encerrarAct(){
+  if(S.role==='solo'){S.activity=null;const el=document.getElementById('live-content');if(el)el.innerHTML=waitingLive();showToast('Encerrado.');return;}
+  await _set(_ref(db,`plstat/${S.sala}/activity`),null);
+  S.activity=null;
+  const el=document.getElementById('live-content');
+  if(el)el.innerHTML=waitingLive();
+  showToast('Atividade encerrada.');
+}
+
+function waitingLive(){return`<div style="text-align:center;padding:60px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">📡</div><div style="font-size:15px">Lance uma atividade em <strong style="color:var(--text2)">Nova Atividade</strong></div></div>`}
+
+/* ═══════════════════════════════════════════════
+   PANEL: AO VIVO
+═══════════════════════════════════════════════ */
+function pAoVivo(){return`
+<div class="ph"><div class="ph-title">Atividade <em>Ao Vivo</em></div></div>
+<div id="live-content">${waitingLive()}</div>`}
+
+function renderLive(act){
+  const el=document.getElementById('live-content');if(!el)return;
+  if(!act){el.innerHTML=waitingLive();return;}
+  const r=act.responses||{},n=Object.keys(r).length;
+  const renderFn={numerica:renderLiveNum,categorica:renderLiveCat,arrastar:renderLiveDrag,multipla:renderLiveMC};
+  el.innerHTML=`
+    <div class="live-banner">
+      <div class="ldot"></div>
+      <div><div class="ltext">${act.question||'Atividade em andamento'}</div>
+      <div class="lsub">${typeLabel(act.type)} · ${n} resposta(s)</div></div>
+    </div>
+    ${(renderFn[act.type]||(() =>''))(act,r)}`;
+  requestAnimationFrame(()=>{
+    if(act.type==='numerica')drawNum(r,act.unit||'');
+    else if(act.type==='categorica')drawCat(r);
+    else if(act.type==='multipla')drawMC(act,r);
+    else if(act.type==='arrastar')drawConsensus(act,r);
+  });
+}
+
+function typeLabel(t){return{numerica:'Numérica',categorica:'Categórica',arrastar:'Arrastar',multipla:'Múltipla'}[t]||t}
+
+/* ─── LIVE NUMÉRICA ─── */
+function renderLiveNum(act,r){
+  const vals=Object.values(r).map(x=>parseFloat(x.value)).filter(v=>!isNaN(v));
+  const n=vals.length,mean=n?vals.reduce((a,b)=>a+b,0)/n:0;
+  const std=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
+  const se=n>1?std/Math.sqrt(n):0;
+  const med=n?[...vals].sort((a,b)=>a-b)[Math.floor(n/2)]:0;
+  const cv=mean?((std/mean)*100).toFixed(1):'-';
+  const rows=Object.entries(r).map(([nm,x])=>`<tr><td>${nm}</td><td style="font-family:var(--font-m);font-weight:600">${x.value} ${act.unit||''}</td><td style="color:var(--text3);font-size:11px">${new Date(x.ts).toLocaleTimeString('pt-BR')}</td></tr>`).join('');
+
+  return`
+  <div class="g4" style="margin-bottom:16px">
+    ${sbox('n','Amostras',n,'c-green','Total de respostas coletadas','Número de observações na amostra da turma')}
+    ${sbox('x̄','Média',n?mean.toFixed(2):'-','c-blue','Média aritmética','Soma dos valores dividida por n. Sensível a valores extremos (outliers).')}
+    ${sbox('DP','Desvio Padrão',n>1?std.toFixed(2):'-','c-gold','Dispersão dos dados','Raiz da variância. Mede o quanto os dados se afastam da média. DP alto = muito variado.')}
+    ${sbox('EP','Erro Padrão',n>1?se.toFixed(2):'-','c-purple','Incerteza da média','EP = DP ÷ √n. Quanto maior a amostra, menor o EP e mais precisa é a estimativa da média.')}
+    ${sbox('Md','Mediana',n?med.toFixed(2):'-','c-teal','Valor central','Valor que divide a distribuição ao meio. Mais robusta que a média para dados assimétricos.')}
+    ${sbox('CV','Coef. Variação',n>1?cv+'%':'-','c-pink','Variabilidade relativa','CV = DP/média × 100. Permite comparar variabilidade entre variáveis de escalas diferentes.')}
+  </div>
+  <div class="stabs">
+    <button class="stab active" onclick="swtab(this,'tnum-bar')">📊 Barra+Erros</button>
+    <button class="stab" onclick="swtab(this,'tnum-box')">📦 Boxplot</button>
+    <button class="stab" onclick="swtab(this,'tnum-vio')">🎻 Violin</button>
+    <button class="stab" onclick="swtab(this,'tnum-jit')">• Jitter</button>
+    <button class="stab" onclick="swtab(this,'tnum-hist')">📈 Histograma</button>
+    <button class="stab" onclick="swtab(this,'tnum-tbl')">📋 Tabela</button>
+  </div>
+  <div id="tnum-bar" class="stabp active">
+    <div class="chart-wrap">
+      <canvas id="cv-bar" height="200"></canvas>
+      ${didNum('bar')}
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-bar','barra')">⬇ PNG</button><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div>
+    </div>
+  </div>
+  <div id="tnum-box" class="stabp">
+    <div class="chart-wrap">
+      <canvas id="cv-box" height="220"></canvas>
+      ${didNum('box')}
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-box','boxplot')">⬇ PNG</button></div>
+    </div>
+  </div>
+  <div id="tnum-vio" class="stabp">
+    <div class="chart-wrap">
+      <canvas id="cv-vio" height="260"></canvas>
+      ${didNum('vio')}
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-vio','violin')">⬇ PNG</button></div>
+    </div>
+  </div>
+  <div id="tnum-jit" class="stabp">
+    <div class="chart-wrap">
+      <canvas id="cv-jit" height="200"></canvas>
+      ${didNum('jit')}
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-jit','jitter')">⬇ PNG</button></div>
+    </div>
+  </div>
+  <div id="tnum-hist" class="stabp">
+    <div class="chart-wrap">
+      <canvas id="cv-hist" height="220"></canvas>
+      ${didNum('hist')}
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-hist','histograma')">⬇ PNG</button></div>
+    </div>
+  </div>
+  <div id="tnum-tbl" class="stabp">
+    <div class="card">
+      <table class="tbl"><thead><tr><th>Aluno</th><th>Valor</th><th>Horário</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div class="export-bar"><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div>
+    </div>
+  </div>`;
+}
+
+function sbox(sym,lbl,val,cls,tip_short,tip_long){return`
+<div class="stat-box ${cls}" style="cursor:pointer" onclick="openModal('${tip_short}','${tip_long}',false)">
+  <div class="stat-sym">${sym} <button class="tip-btn" data-tip="${tip_long}">?</button></div>
+  <div class="stat-val" style="color:var(--${cls.replace('c-','').replace('gold','accent').replace('blue','blue').replace('green','green').replace('purple','purple').replace('teal','teal').replace('pink','pink')})">${val}</div>
+  <div class="stat-lbl">${lbl}</div>
+</div>`}
+
+function didNum(type){
+  const tips={
+    bar:`<div class="chart-didactic"><h4>📖 Lendo este gráfico</h4>
+      <div class="did-row"><span class="did-sym">▉</span><div class="did-txt"><strong>Barra azul:</strong> representa a <strong>média (x̄)</strong> — valor central da distribuição.</div></div>
+      <div class="did-row"><span class="did-sym">|±DP|</span><div class="did-txt"><strong>Barras de erro azuis:</strong> ± 1 Desvio Padrão. 68% dos dados caem aqui (se distribuição normal). Mostra a <em>variabilidade real</em>.</div></div>
+      <div class="did-row"><span class="did-sym">|±EP|</span><div class="did-txt"><strong>Barras de erro vermelhas:</strong> ± 1 Erro Padrão. Mostra a <em>precisão da média</em>. Diminui com mais observações.</div></div>
+    </div>`,
+    box:`<div class="chart-didactic"><h4>📖 Lendo o Boxplot</h4>
+      <div class="did-row"><span class="did-sym">—</span><div class="did-txt"><strong>Linha central:</strong> Mediana (Q2) — valor que divide os dados ao meio.</div></div>
+      <div class="did-row"><span class="did-sym">□</span><div class="did-txt"><strong>Caixa (box):</strong> IQR = Q3 − Q1. Contém os 50% centrais dos dados.</div></div>
+      <div class="did-row"><span class="did-sym">⊣⊢</span><div class="did-txt"><strong>Bigodes:</strong> Extensão até 1,5×IQR. Dados fora = <strong>outliers</strong> (pontos isolados).</div></div>
+      <div class="did-row"><span class="did-sym">●</span><div class="did-txt"><strong>Pontos:</strong> Outliers — valores fora do esperado. Merecem investigação!</div></div>
+    </div>`,
+    vio:`<div class="chart-didactic"><h4>📖 Lendo o Violin Plot</h4>
+      <div class="did-row"><span class="did-sym">🎻</span><div class="did-txt"><strong>Largura do violino:</strong> proporcional à <strong>densidade</strong> de dados naquele ponto — onde é mais largo, há mais observações.</div></div>
+      <div class="did-row"><span class="did-sym">—</span><div class="did-txt"><strong>Vantagem sobre o boxplot:</strong> revela a <em>forma da distribuição</em> (bimodal, assimétrica etc.).</div></div>
+    </div>`,
+    jit:`<div class="chart-didactic"><h4>📖 Lendo o Jitter Plot</h4>
+      <div class="did-row"><span class="did-sym">•</span><div class="did-txt"><strong>Cada ponto = um aluno.</strong> O deslocamento horizontal (jitter) é aleatório para evitar sobreposição.</div></div>
+      <div class="did-row"><span class="did-sym">👁</span><div class="did-txt">Mostra <strong>todos os dados brutos</strong>. Ideal para amostras pequenas onde o boxplot pode esconder estrutura.</div></div>
+    </div>`,
+    hist:`<div class="chart-didactic"><h4>📖 Lendo o Histograma</h4>
+      <div class="did-row"><span class="did-sym">▉</span><div class="did-txt"><strong>Cada barra = um bin (intervalo)</strong>. Altura = frequência (nº de alunos naquele intervalo).</div></div>
+      <div class="did-row"><span class="did-sym">∿</span><div class="did-txt"><strong>Forma:</strong> simétrica ≈ normal; cauda direita = assimetria positiva; cauda esquerda = assimetria negativa.</div></div>
+    </div>`
+  };
+  return tips[type]||'';
+}
+
+/* ─── LIVE CATEGÓRICA ─── */
+function renderLiveCat(act,r){
+  const rows=Object.entries(r).map(([nm,x])=>`<tr><td>${nm}</td><td style="font-weight:600">${x.value}</td><td style="color:var(--text3);font-size:11px">${new Date(x.ts).toLocaleTimeString('pt-BR')}</td></tr>`).join('');
+  return`
+  <div class="stabs">
+    <button class="stab active" onclick="swtab(this,'tcat-cloud')">☁️ Nuvem</button>
+    <button class="stab" onclick="swtab(this,'tcat-bar')">📊 Barras</button>
+    <button class="stab" onclick="swtab(this,'tcat-pizza')">🍕 Pizza</button>
+    <button class="stab" onclick="swtab(this,'tcat-rosca')">🍩 Rosca</button>
+    <button class="stab" onclick="swtab(this,'tcat-tbl')">📋 Tabela</button>
+  </div>
+  <div id="tcat-cloud" class="stabp active">
+    <div class="chart-wrap"><canvas id="cv-cloud" height="200"></canvas>
+    <div class="chart-didactic"><h4>📖 Nuvem de Palavras</h4>
+      <div class="did-row"><span class="did-sym">Aa</span><div class="did-txt"><strong>Tamanho ∝ frequência.</strong> Palavras maiores foram citadas por mais alunos. Variável qualitativa em ação!</div></div>
+    </div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-cloud','nuvem')">⬇ PNG</button><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>
+  <div id="tcat-bar" class="stabp">
+    <div class="chart-wrap"><canvas id="cv-catbar" height="200"></canvas>
+    <div class="chart-didactic"><h4>📖 Barras de Frequência</h4>
+      <div class="did-row"><span class="did-sym">▉</span><div class="did-txt">Cada barra = uma <strong>categoria</strong>. Altura = frequência absoluta. Percentual = frequência relativa.</div></div>
+      <div class="did-row"><span class="did-sym">%</span><div class="did-txt"><strong>Frequência relativa:</strong> f = ni/N × 100. Permite comparar turmas de tamanhos diferentes.</div></div>
+    </div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-catbar','barras')">⬇ PNG</button></div></div>
+  </div>
+  <div id="tcat-pizza" class="stabp">
+    <div class="chart-wrap"><canvas id="cv-pizza" height="280"></canvas>
+    <div class="chart-didactic"><h4>📖 Gráfico de Pizza</h4>
+      <div class="did-row"><span class="did-sym">🍕</span><div class="did-txt">Cada fatia = uma categoria. Ângulo proporcional à <strong>proporção</strong>. Use com poucas categorias (≤ 6).</div></div>
+      <div class="did-row"><span class="did-sym">⚠️</span><div class="did-txt">Difícil comparar fatias de tamanho similar. Prefira barras para mais de 5 categorias.</div></div>
+    </div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-pizza','pizza')">⬇ PNG</button></div></div>
+  </div>
+  <div id="tcat-rosca" class="stabp">
+    <div class="chart-wrap"><canvas id="cv-rosca" height="280"></canvas>
+    <div class="chart-didactic"><h4>📖 Gráfico de Rosca</h4>
+      <div class="did-row"><span class="did-sym">🍩</span><div class="did-txt">Variação da pizza com espaço central para exibir o <strong>total (n)</strong>. Visualmente mais limpo.</div></div>
+    </div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-rosca','rosca')">⬇ PNG</button></div></div>
+  </div>
+  <div id="tcat-tbl" class="stabp">
+    <div class="card"><table class="tbl"><thead><tr><th>Aluno</th><th>Resposta</th><th>Horário</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>`;
+}
+
+/* ─── LIVE ARRASTAR ─── */
+const CATS=[{k:'qualnom',l:'Qual. Nominal',c:'#f5a623',b:'QN'},{k:'qualord',l:'Qual. Ordinal',c:'#f05a7e',b:'QO'},{k:'quantdisc',l:'Quant. Discreta',c:'#4a9eff',b:'QD'},{k:'quantcont',l:'Quant. Contínua',c:'#27c97e',b:'QC'}];
+
+function renderLiveDrag(act,r){
+  const rows=Object.entries(r).map(([nm,x])=>`<tr><td>${nm}</td>${(act.cards||[]).map(c=>`<td style="font-size:11px;color:var(--text3)">${x[c]||'—'}</td>`).join('')}</tr>`).join('');
+  return`
+  <div class="stabs">
+    <button class="stab active" onclick="swtab(this,'tdrag-consensus')">🗺️ Consenso</button>
+    <button class="stab" onclick="swtab(this,'tdrag-tree')">🌳 Árvore</button>
+    <button class="stab" onclick="swtab(this,'tdrag-tbl')">📋 Tabela</button>
+  </div>
+  <div id="tdrag-consensus" class="stabp active">
+    <div class="card"><div class="card-label">Mapa de consenso da turma</div>
+    <div id="consensus-map"></div>
+    <div class="chart-didactic"><h4>📖 Como ler</h4>
+      <div class="did-row"><span class="did-sym">▉</span><div class="did-txt">Cada linha = uma variável. A largura de cada cor mostra quantos alunos classificaram naquela categoria. <strong>Cor dominante = consenso.</strong></div></div>
+    </div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>
+  <div id="tdrag-tree" class="stabp">
+    <div class="chart-wrap"><canvas id="cv-tree" height="300"></canvas>
+    <div class="chart-didactic"><h4>📖 Diagrama de Árvore (Dendrograma Simplificado)</h4>
+      <div class="did-row"><span class="did-sym">🌳</span><div class="did-txt">Organiza as variáveis em uma hierarquia de classificação estatística. Raiz = mais geral → folhas = mais específico.</div></div>
+    </div></div>
+  </div>
+  <div id="tdrag-tbl" class="stabp">
+    <div class="card"><div style="overflow-x:auto">
+    <table class="tbl"><thead><tr><th>Aluno</th>${(act.cards||[]).map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>`;
+}
+
+/* ─── LIVE MÚLTIPLA ─── */
+function renderLiveMC(act,r){
+  const rows=Object.entries(r).map(([nm,x])=>`<tr><td>${nm}</td><td style="font-weight:600">${x.value}</td><td style="color:var(--text3);font-size:11px">${new Date(x.ts).toLocaleTimeString('pt-BR')}</td></tr>`).join('');
+  return`
+  <div class="stabs">
+    <button class="stab active" onclick="swtab(this,'tmc-bar')">📊 Barras ao Vivo</button>
+    <button class="stab" onclick="swtab(this,'tmc-pizza')">🍕 Pizza</button>
+    <button class="stab" onclick="swtab(this,'tmc-tbl')">📋 Tabela</button>
+  </div>
+  <div id="tmc-bar" class="stabp active">
+    <div class="chart-wrap"><canvas id="cv-mcbar" height="200"></canvas>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-mcbar','multipla')">⬇ PNG</button><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>
+  <div id="tmc-pizza" class="stabp">
+    <div class="chart-wrap"><canvas id="cv-mcpizza" height="280"></canvas>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlPNG('cv-mcpizza','multipla_pizza')">⬇ PNG</button></div></div>
+  </div>
+  <div id="tmc-tbl" class="stabp">
+    <div class="card"><table class="tbl"><thead><tr><th>Aluno</th><th>Resposta</th><th>Horário</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="export-bar"><button class="btn btn-ghost" onclick="dlCSV()">⬇ CSV</button></div></div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   DRAW FUNCTIONS
+═══════════════════════════════════════════════ */
+const PALETTE=['#f5a623','#4a9eff','#27c97e','#f05a7e','#a78bfa','#2dd4bf','#f87171','#fb923c'];
+
+function drawNum(r,unit){
+  const vals=Object.values(r).map(x=>parseFloat(x.value)).filter(v=>!isNaN(v));
+  if(!vals.length)return;
+  const n=vals.length,mean=vals.reduce((a,b)=>a+b,0)/n;
+  const std=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
+  const se=n>1?std/Math.sqrt(n):0;
+  const sorted=[...vals].sort((a,b)=>a-b);
+  const q1=sorted[Math.floor(n*.25)],q3=sorted[Math.floor(n*.75)],med=sorted[Math.floor(n/2)];
+
+  // BAR
+  const bc=document.getElementById('cv-bar');
+  if(bc){
+    const ctx=bc.getContext('2d');const W=bc.offsetWidth||600;bc.width=W;bc.height=220;
+    ctx.clearRect(0,0,W,220);
+    const p={l:56,r:20,t:24,b:40};
+    const minV=Math.max(0,mean-std*2-5),maxV=mean+std*2+5;
+    const ys=v=>p.t+(220-p.t-p.b)*(1-(v-minV)/(maxV-minV));
+    const bx=W/2-40,bw=80;
+    ctx.fillStyle='rgba(74,158,255,.25)';ctx.fillRect(bx,ys(mean),bw,ys(minV)-ys(mean));
+    ctx.strokeStyle='#4a9eff';ctx.lineWidth=2;ctx.strokeRect(bx,ys(mean),bw,ys(minV)-ys(mean));
+    [[std,'#4a9eff',18],[se,'#f05a7e',9]].forEach(([err,c,hw])=>{
+      const yt=ys(mean+err),yb=ys(mean-err),cx=W/2;
+      ctx.strokeStyle=c;ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(cx,yt);ctx.lineTo(cx,yb);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx-hw,yt);ctx.lineTo(cx+hw,yt);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx-hw,yb);ctx.lineTo(cx+hw,yb);ctx.stroke();
+    });
+    ctx.fillStyle='#4a9eff';ctx.font=`bold 12px JetBrains Mono,monospace`;ctx.textAlign='center';
+    ctx.fillText(`x̄=${mean.toFixed(2)} ${unit}`,W/2,ys(mean)-10);
+    // axes
+    ctx.strokeStyle=PALETTE[0]+'44';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(p.l,p.t);ctx.lineTo(p.l,220-p.b);ctx.lineTo(W-p.r,220-p.b);ctx.stroke();
+    [minV,(minV+maxV)/2,maxV].forEach(v=>{
+      ctx.fillStyle='#4a5568';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='right';
+      ctx.fillText(v.toFixed(1),p.l-4,ys(v)+4);
+    });
+    ctx.fillStyle='#8b96aa';ctx.textAlign='center';ctx.font='11px Barlow,sans-serif';
+    ctx.fillText('Azul = ±DP    Vermelho = ±EP', W/2, 220-6);
+  }
+
+  // BOXPLOT
+  const bxc=document.getElementById('cv-box');
+  if(bxc){
+    const ctx=bxc.getContext('2d');const W=bxc.offsetWidth||600;bxc.width=W;bxc.height=240;
+    ctx.clearRect(0,0,W,240);
+    const p={l:56,r:20,t:30,b:50};
+    const minV=sorted[0],maxV=sorted[n-1];
+    const ys=v=>p.l+(W-p.l-p.r)*((v-minV)/(maxV-minV||1));
+    const cy=120,bh=50;
+    const iqr=q3-q1,wlo=Math.max(minV,q1-1.5*iqr),whi=Math.min(maxV,q3+1.5*iqr);
+    // whiskers
+    ctx.strokeStyle='#8b96aa';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ys(wlo),cy);ctx.lineTo(ys(q1),cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ys(q3),cy);ctx.lineTo(ys(whi),cy);ctx.stroke();
+    [wlo,whi].forEach(v=>{ctx.beginPath();ctx.moveTo(ys(v),cy-12);ctx.lineTo(ys(v),cy+12);ctx.stroke();});
+    // box
+    ctx.fillStyle='rgba(74,158,255,.2)';ctx.fillRect(ys(q1),cy-bh/2,ys(q3)-ys(q1),bh);
+    ctx.strokeStyle='#4a9eff';ctx.lineWidth=2;ctx.strokeRect(ys(q1),cy-bh/2,ys(q3)-ys(q1),bh);
+    // median
+    ctx.strokeStyle='#f5a623';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(ys(med),cy-bh/2);ctx.lineTo(ys(med),cy+bh/2);ctx.stroke();
+    // outliers
+    sorted.forEach(v=>{
+      if(v<wlo||v>whi){
+        ctx.beginPath();ctx.arc(ys(v),cy,5,0,Math.PI*2);
+        ctx.fillStyle='#f05a7e';ctx.fill();
+      }
+    });
+    // labels
+    ctx.fillStyle='#8b96aa';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='center';
+    [[q1,'Q1'],[med,'Md'],[q3,'Q3'],[mean,'x̄']].forEach(([v,lb])=>{
+      ctx.fillStyle=lb==='x̄'?'#4a9eff':'#8b96aa';
+      ctx.fillText(lb,ys(v),cy-bh/2-8);
+      ctx.fillText(v.toFixed(1),ys(v),cy+bh/2+18);
+    });
+    // axis
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(p.l,220);ctx.lineTo(W-p.r,220);ctx.stroke();
+    ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';
+    ctx.fillText(unit||'valor',W/2,238);
+  }
+
+  // VIOLIN
+  const vc=document.getElementById('cv-vio');
+  if(vc&&vals.length>1){
+    const ctx=vc.getContext('2d');const W=vc.offsetWidth||600;vc.width=W;vc.height=280;
+    ctx.clearRect(0,0,W,280);
+    const p={l:56,r:20,t:20,b:40};const H=280;
+    const minV=sorted[0]-std*.5,maxV=sorted[n-1]+std*.5;
+    const xs=v=>p.l+(W-p.l-p.r)*((v-minV)/(maxV-minV||1));
+    const cx=H/2;
+    // KDE (Gaussian)
+    const kde=(x)=>{const h=std*1.06*Math.pow(n,-0.2)||1;return vals.reduce((s,xi)=>s+Math.exp(-.5*((x-xi)/h)**2)/(h*Math.sqrt(2*Math.PI)),0)/n;};
+    const steps=120;const step=(maxV-minV)/steps;
+    const densities=[];let maxD=0;
+    for(let i=0;i<=steps;i++){const v=minV+i*step;const d=kde(v);densities.push({v,d});if(d>maxD)maxD=d;}
+    const maxW=Math.min(cx*.8,80);
+    ctx.fillStyle='rgba(74,158,255,.25)';
+    ctx.beginPath();ctx.moveTo(xs(densities[0].v),cx);
+    densities.forEach(({v,d})=>ctx.lineTo(xs(v),cx-d/maxD*maxW));
+    ctx.lineTo(xs(densities[steps].v),cx);
+    densities.slice().reverse().forEach(({v,d})=>ctx.lineTo(xs(v),cx+d/maxD*maxW));
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#4a9eff';ctx.lineWidth=2;
+    ctx.beginPath();densities.forEach(({v,d},i)=>{i===0?ctx.moveTo(xs(v),cx-d/maxD*maxW):ctx.lineTo(xs(v),cx-d/maxD*maxW)});ctx.stroke();
+    ctx.beginPath();densities.forEach(({v,d},i)=>{i===0?ctx.moveTo(xs(v),cx+d/maxD*maxW):ctx.lineTo(xs(v),cx+d/maxD*maxW)});ctx.stroke();
+    // box inside violin
+    ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(xs(q1),cx-12,xs(q3)-xs(q1),24);
+    ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1;ctx.strokeRect(xs(q1),cx-12,xs(q3)-xs(q1),24);
+    ctx.strokeStyle='#f5a623';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xs(med),cx-12);ctx.lineTo(xs(med),cx+12);ctx.stroke();
+    ctx.fillStyle='#f5a623';ctx.font='bold 11px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText('Md='+med.toFixed(1),xs(med),cx-20);
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,260);ctx.lineTo(W-p.r,260);ctx.stroke();
+    ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';ctx.fillText(unit||'valor',W/2,276);
+  }
+
+  // JITTER
+  const jc=document.getElementById('cv-jit');
+  if(jc){
+    const ctx=jc.getContext('2d');const W=jc.offsetWidth||600;jc.width=W;jc.height=220;
+    ctx.clearRect(0,0,W,220);
+    const p={l:56,r:20,t:20,b:40};
+    const minV=sorted[0]-std*.3,maxV=sorted[n-1]+std*.3;
+    const xs=v=>p.l+(W-p.l-p.r)*((v-minV)/(maxV-minV||1));
+    const cy=100;
+    // mean line
+    ctx.strokeStyle='#f5a623';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(xs(mean),p.t);ctx.lineTo(xs(mean),220-p.b);ctx.stroke();
+    ctx.setLineDash([]);
+    // sd band
+    ctx.fillStyle='rgba(74,158,255,.08)';
+    ctx.fillRect(xs(mean-std),p.t,xs(mean+std)-xs(mean-std),220-p.t-p.b);
+    // points
+    vals.forEach((v,i)=>{
+      const jitter=(Math.random()-.5)*50;
+      ctx.beginPath();ctx.arc(xs(v),cy+jitter,5,0,Math.PI*2);
+      ctx.fillStyle=PALETTE[i%PALETTE.length]+'cc';ctx.fill();
+      ctx.strokeStyle=PALETTE[i%PALETTE.length];ctx.lineWidth=1;ctx.stroke();
+    });
+    ctx.fillStyle='#f5a623';ctx.font='bold 11px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText('x̄='+mean.toFixed(2),xs(mean),p.t-4);
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,220-p.b);ctx.lineTo(W-p.r,220-p.b);ctx.stroke();
+    [minV,mean,maxV].forEach(v=>{
+      ctx.fillStyle='#8b96aa';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='center';
+      ctx.fillText(v.toFixed(1),xs(v),220-p.b+16);
+    });
+    ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';ctx.fillText(unit||'valor',W/2,216);
+  }
+
+  // HISTOGRAM
+  const hc=document.getElementById('cv-hist');
+  if(hc&&n>1){
+    const ctx=hc.getContext('2d');const W=hc.offsetWidth||600;hc.width=W;hc.height=240;
+    ctx.clearRect(0,0,W,240);
+    const p={l:44,r:16,t:20,b:50};
+    const nb=Math.max(4,Math.ceil(Math.sqrt(n)));
+    const bw=(sorted[n-1]-sorted[0])/nb||1;
+    const bins=Array(nb).fill(0);
+    vals.forEach(v=>{const bi=Math.min(Math.floor((v-sorted[0])/bw),nb-1);bins[bi]++;});
+    const maxB=Math.max(...bins,1);
+    const bwPx=(W-p.l-p.r)/nb;
+    bins.forEach((cnt,i)=>{
+      const bh=(cnt/maxB)*(240-p.t-p.b);
+      const bx=p.l+i*bwPx;
+      const hue=200+i*18;
+      ctx.fillStyle=`hsla(${hue},70%,65%,.75)`;ctx.fillRect(bx+1,240-p.b-bh,bwPx-2,bh);
+      ctx.strokeStyle=`hsla(${hue},70%,50%,1)`;ctx.lineWidth=1;ctx.strokeRect(bx+1,240-p.b-bh,bwPx-2,bh);
+      if(cnt>0){ctx.fillStyle='#e8edf5';ctx.font='bold 11px Barlow,sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx+bwPx/2,240-p.b-bh-5);}
+      ctx.fillStyle='#4a5568';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+      ctx.fillText((sorted[0]+i*bw).toFixed(1),bx+bwPx/2,240-p.b+14);
+    });
+    // mean line
+    const mx=p.l+(W-p.l-p.r)*((mean-sorted[0])/(sorted[n-1]-sorted[0]||1));
+    ctx.strokeStyle='#f5a623';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(mx,p.t);ctx.lineTo(mx,240-p.b);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,p.t);ctx.lineTo(p.l,240-p.b);ctx.lineTo(W-p.r,240-p.b);ctx.stroke();
+    ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';ctx.fillText(unit||'valor',W/2,238);
+  }
+}
+
+function drawCat(r){
+  const vals=Object.values(r).map(x=>x.value);
+  const freq={};vals.forEach(v=>freq[v]=(freq[v]||0)+1);
+  const keys=Object.keys(freq),total=vals.length;
+
+  // WORD CLOUD
+  const wc=document.getElementById('cv-cloud');
+  if(wc){
+    const ctx=wc.getContext('2d');const W=wc.offsetWidth||600;wc.width=W;wc.height=200;
+    ctx.fillStyle='#131720';ctx.fillRect(0,0,W,200);
+    const maxF=Math.max(...Object.values(freq));
+    let x=30,y=70;
+    keys.forEach((k,i)=>{
+      const sz=16+Math.round(freq[k]/maxF*38);
+      ctx.font=`bold ${sz}px Playfair Display,serif`;
+      ctx.fillStyle=PALETTE[i%PALETTE.length];
+      const tw=ctx.measureText(k).width;
+      if(x+tw>W-20){x=20;y+=sz+14;}
+      ctx.fillText(k,x,y);x+=tw+22;
+    });
+  }
+
+  // BARS
+  const bc=document.getElementById('cv-catbar');
+  if(bc){
+    const ctx=bc.getContext('2d');const W=bc.offsetWidth||600;bc.width=W;bc.height=220;
+    ctx.clearRect(0,0,W,220);
+    const p={l:40,r:16,t:20,b:60};
+    const maxF=Math.max(...Object.values(freq),1);
+    const bwPx=(W-p.l-p.r)/keys.length;
+    keys.forEach((k,i)=>{
+      const bh=(freq[k]/maxF)*(220-p.t-p.b);const bx=p.l+i*bwPx+3;
+      ctx.fillStyle=PALETTE[i%PALETTE.length]+'cc';ctx.fillRect(bx,220-p.b-bh,bwPx-6,bh);
+      ctx.fillStyle='#e8edf5';ctx.font='bold 12px Barlow,sans-serif';ctx.textAlign='center';
+      ctx.fillText(freq[k],bx+(bwPx-6)/2,220-p.b-bh-5);
+      ctx.fillStyle='#8b96aa';ctx.font='10px JetBrains Mono,monospace';
+      ctx.fillText((freq[k]/total*100).toFixed(0)+'%',bx+(bwPx-6)/2,220-p.b-bh-18);
+      ctx.save();ctx.translate(bx+(bwPx-6)/2,220-p.b+10);ctx.rotate(-.4);
+      ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';
+      ctx.fillText(k.length>12?k.substring(0,12)+'…':k,0,0);ctx.restore();
+    });
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,p.t);ctx.lineTo(p.l,220-p.b);ctx.lineTo(W-p.r,220-p.b);ctx.stroke();
+  }
+
+  drawPieRosca(freq,keys,total,'cv-pizza',false);
+  drawPieRosca(freq,keys,total,'cv-rosca',true);
+  drawPieRosca(freq,keys,total,'cv-mcpizza',false);
+}
+
+function drawPieRosca(freq,keys,total,id,donut){
+  const c=document.getElementById(id);if(!c)return;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||400;c.width=W;c.height=300;
+  ctx.clearRect(0,0,W,300);
+  const cx=W/2,cy=130,r=100;
+  let start=-Math.PI/2;
+  keys.forEach((k,i)=>{
+    const angle=(freq[k]/total)*Math.PI*2;
+    ctx.beginPath();if(donut){
+      ctx.arc(cx,cy,r,start,start+angle);ctx.arc(cx,cy,r*.55,start+angle,start,-1);
+    } else {
+      ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+angle);
+    }
+    ctx.closePath();
+    ctx.fillStyle=PALETTE[i%PALETTE.length];ctx.fill();
+    ctx.strokeStyle='#0b0e14';ctx.lineWidth=2;ctx.stroke();
+    // label
+    const mid=start+angle/2;const lr=r*.72;
+    ctx.fillStyle='#fff';ctx.font='bold 11px Barlow,sans-serif';ctx.textAlign='center';
+    ctx.fillText((freq[k]/total*100).toFixed(0)+'%',cx+Math.cos(mid)*lr,cy+Math.sin(mid)*lr+4);
+    start+=angle;
+  });
+  if(donut){
+    ctx.fillStyle='#e8edf5';ctx.font='bold 16px JetBrains Mono,monospace';ctx.textAlign='center';
+    ctx.fillText('n='+total,cx,cy+6);
+  }
+  // legend
+  let lx=16,ly=250;
+  keys.forEach((k,i)=>{
+    ctx.fillStyle=PALETTE[i%PALETTE.length];ctx.fillRect(lx,ly,12,12);
+    ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='left';
+    ctx.fillText(k+(freq[k]?` (${freq[k]})`:''),(lx+16),ly+10);
+    lx+=ctx.measureText(k+(freq[k]?` (${freq[k]})`:'')+(16+20)).width+40;
+    if(lx>W-80){lx=16;ly+=18;}
+  });
+}
+
+function drawMC(act,r){
+  const opts=act.options||[];const freq={};opts.forEach(o=>freq[o]=0);
+  Object.values(r).forEach(x=>{if(freq[x.value]!==undefined)freq[x.value]++;});
+  const total=Object.values(freq).reduce((a,b)=>a+b,0)||1;
+  // bar
+  const bc=document.getElementById('cv-mcbar');
+  if(bc){
+    const ctx=bc.getContext('2d');const W=bc.offsetWidth||600;bc.width=W;bc.height=220;
+    ctx.clearRect(0,0,W,220);
+    const p={l:40,r:16,t:20,b:60};const maxF=Math.max(...Object.values(freq),1);
+    const bwPx=(W-p.l-p.r)/opts.length;
+    opts.forEach((o,i)=>{
+      const bh=(freq[o]/maxF)*(220-p.t-p.b);const bx=p.l+i*bwPx+3;
+      ctx.fillStyle=PALETTE[i%PALETTE.length]+'cc';ctx.fillRect(bx,220-p.b-bh,bwPx-6,bh);
+      ctx.fillStyle='#e8edf5';ctx.font='bold 12px Barlow,sans-serif';ctx.textAlign='center';
+      ctx.fillText(freq[o],bx+(bwPx-6)/2,220-p.b-bh-5);
+      ctx.fillStyle='#8b96aa';ctx.font='10px JetBrains Mono,monospace';
+      ctx.fillText((freq[o]/total*100).toFixed(0)+'%',bx+(bwPx-6)/2,220-p.b-bh-18);
+      ctx.save();ctx.translate(bx+(bwPx-6)/2,220-p.b+10);ctx.rotate(-.4);
+      ctx.fillStyle='#8b96aa';ctx.font='11px Barlow,sans-serif';ctx.textAlign='center';
+      ctx.fillText(o.length>14?o.substring(0,14)+'…':o,0,0);ctx.restore();
+    });
+    ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,p.t);ctx.lineTo(p.l,220-p.b);ctx.lineTo(W-p.r,220-p.b);ctx.stroke();
+  }
+  drawPieRosca(freq,opts,total,'cv-mcpizza',false);
+}
+
+function drawConsensus(act,r){
+  const map=document.getElementById('consensus-map');if(!map)return;
+  const cards=act.cards||[];const counts={};
+  cards.forEach(c=>{counts[c]={};CATS.forEach(cat=>counts[c][cat.k]=0);});
+  Object.values(r).forEach(x=>{cards.forEach(c=>{if(x[c])counts[c][x[c]]=(counts[c][x[c]]||0)+1;});});
+  map.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">`+
+    cards.map(c=>{
+      const tot=CATS.reduce((s,cat)=>s+counts[c][cat.k],0)||1;
+      return`<div style="display:flex;align-items:center;gap:12px">
+        <div style="min-width:140px;font-size:13px;font-weight:600;color:var(--text)">${c}</div>
+        <div style="flex:1;height:30px;border-radius:6px;overflow:hidden;display:flex">
+          ${CATS.map(cat=>{
+            const pct=(counts[c][cat.k]/tot*100).toFixed(0);
+            return pct>0?`<div style="width:${pct}%;background:${cat.c};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;transition:width .6s ease">${pct>10?cat.b:''}</div>`:'';
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')+`</div>`;
+
+  // TREE
+  const tc=document.getElementById('cv-tree');if(!tc)return;
+  const ctx=tc.getContext('2d');const W=tc.offsetWidth||600;tc.width=W;tc.height=300;
+  ctx.clearRect(0,0,W,300);
+  const root={label:'Variável',x:W/2,y:30,children:[
+    {label:'Qualitativa',x:W*.25,y:110,color:'#f5a623',children:[{label:'Nominal',x:W*.15,y:200,color:'#f5a623'},{label:'Ordinal',x:W*.35,y:200,color:'#f05a7e'}]},
+    {label:'Quantitativa',x:W*.75,y:110,color:'#4a9eff',children:[{label:'Discreta',x:W*.62,y:200,color:'#4a9eff'},{label:'Contínua',x:W*.88,y:200,color:'#27c97e'}]}
+  ]};
+  function drawNode(n){
+    if(n.children)n.children.forEach(c=>{
+      ctx.strokeStyle=c.color||'#4a5568';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(n.x,n.y+14);ctx.lineTo(c.x,c.y-14);ctx.stroke();
+      drawNode(c);
+    });
+    const r2=16;ctx.beginPath();ctx.arc(n.x,n.y,r2,0,Math.PI*2);
+    ctx.fillStyle=n.color?n.color+'33':'rgba(255,255,255,.08)';ctx.fill();
+    ctx.strokeStyle=n.color||'#4a5568';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=n.color||'#8b96aa';ctx.font=`bold 11px Barlow Condensed,sans-serif`;ctx.textAlign='center';
+    ctx.fillText(n.label,n.x,n.y+4);
+    // add example cards from drag
+    if(n.children===undefined){
+      const catKey=CATS.find(c=>c.l===n.label||n.label.includes(c.b))?.k;
+      if(catKey){
+        let ey=n.y+26;
+        cards.forEach(card=>{
+          if(counts[card][catKey]>0){
+            ctx.fillStyle='#4a5568';ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+            ctx.fillText('• '+card,n.x,ey);ey+=13;
+          }
+        });
+      }
+    }
+  }
+  drawNode(root);
+}
+
+/* ═══════════════════════════════════════════════
+   MÓDULO: PERGUNTA CIENTÍFICA (JORNADA)
+═══════════════════════════════════════════════ */
+function pPergunta(){return`
+<div class="ph">
+  <div class="ph-title">🔭 A Jornada da <em>Pergunta Científica</em></div>
+  <div class="ph-sub">Uma experiência interativa em 5 etapas — da observação à hipótese testável. A turma participa em cada passo.</div>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <div class="card-label">Progresso da jornada</div>
+  <div class="progress-bar"><div class="progress-fill" id="journey-prog" style="width:0%"></div></div>
+  <div style="font-size:11px;color:var(--text3);font-family:var(--font-m)" id="journey-prog-lbl">Etapa 0 de 5</div>
+</div>
+<div class="journey-track" id="journey-track">
+  ${renderJourneySteps()}
+</div>
+`}
+
+function renderJourneySteps(){
+  const steps=[
+    {icon:'👁️',title:'Observação',sub:'O que você nota? O que chama atenção?',content:`
+      <div style="margin-bottom:12px;font-size:13px;color:var(--text2)">Lance uma observação biológica para a turma discutir. Alunos enviam o que observariam.</div>
+      <input class="inp" id="j-obs" placeholder="Ex: Peixes de rios com mata ciliar parecem maiores do que os de rios degradados." style="margin-bottom:10px">
+      <button class="btn btn-gold" onclick="jLaunch('observacao',document.getElementById('j-obs').value)">🚀 Lançar para a turma</button>
+      <div id="j-obs-result" style="margin-top:14px"></div>
+    `},
+    {icon:'❓',title:'Pergunta',sub:'Transforme a observação em uma pergunta científica',content:`
+      <div class="def-box"><div class="def-term">O que é uma boa pergunta científica?</div>
+      <div class="def-body">Uma pergunta científica deve ser: <strong>específica</strong>, <strong>testável</strong>, <strong>mensurável</strong> e <strong>relevante</strong>. Ela conecta duas ou mais <strong>variáveis</strong> observáveis.</div>
+      <div class="def-example">A largura do rio afeta a riqueza de espécies de peixes?</div></div>
+      <textarea class="inp" id="j-perg" placeholder="Escreva a pergunta científica da turma..." style="margin-bottom:10px"></textarea>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="jAiCheck('pergunta',document.getElementById('j-perg').value)">🤖 IA avalia esta pergunta</button>
+        <button class="btn btn-blue" onclick="jLaunch('pergunta',document.getElementById('j-perg').value)">📡 Lançar para turma votar</button>
+      </div>
+      <div id="j-ai-perg" class="ai-box" style="margin-top:14px;display:none"></div>
+      <div id="j-perg-result" style="margin-top:14px"></div>
+    `},
+    {icon:'💡',title:'Hipótese',sub:'Se… então… porque…',content:`
+      <div class="def-box"><div class="def-term">Estrutura de uma Hipótese</div>
+      <div class="def-body">Hipótese = previsão testável. Formato clássico:<br><strong>"Se [variável independente], então [variável dependente], porque [mecanismo]."</strong><br><br>
+      Sempre vem em par: <strong>H₀ (hipótese nula)</strong> — não há efeito — e <strong>H₁ (hipótese alternativa)</strong> — há efeito.</div>
+      <div class="def-example">H₀: A qualidade da mata ciliar não afeta a biomassa de peixes. H₁: Rios com mata ciliar têm maior biomassa de peixes.</div></div>
+      <textarea class="inp" id="j-hip" placeholder="Escreva a hipótese (H₁ alternativa)..." style="margin-bottom:10px"></textarea>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="jAiCheck('hipotese',document.getElementById('j-hip').value)">🤖 IA avalia hipótese</button>
+        <button class="btn btn-blue" onclick="jLaunch('hipotese_vote',document.getElementById('j-hip').value)">📡 Turma: testável ou não?</button>
+      </div>
+      <div id="j-ai-hip" class="ai-box" style="margin-top:14px;display:none"></div>
+      <div id="j-hip-result" style="margin-top:14px"></div>
+    `},
+    {icon:'📏',title:'Variáveis & Métricas',sub:'Identifique VI, VD e as variáveis de controle',content:`
+      <div class="g2" style="margin-bottom:14px">
+        <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Variável Independente (VI)</div>
+        <div class="def-body">A que o pesquisador <strong>manipula ou categoriza</strong>. Causa potencial. Eixo X do gráfico.</div></div>
+        <div class="def-box" style="border-left-color:var(--green)"><div class="def-term" style="color:var(--green)">Variável Dependente (VD)</div>
+        <div class="def-body">A que é <strong>medida como resposta</strong>. Efeito potencial. Eixo Y do gráfico.</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div><label style="font-size:11px;color:var(--text3);font-family:var(--font-m);display:block;margin-bottom:4px">VARIÁVEL INDEPENDENTE</label>
+        <input class="inp" id="j-vi" placeholder="Ex: qualidade da mata ciliar"></div>
+        <div><label style="font-size:11px;color:var(--text3);font-family:var(--font-m);display:block;margin-bottom:4px">VARIÁVEL DEPENDENTE</label>
+        <input class="inp" id="j-vd" placeholder="Ex: biomassa de peixes (g)"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="jVarsLaunch()">📡 Turma classifica as variáveis</button>
+      </div>
+      <div id="j-vars-result" style="margin-top:14px"></div>
+    `},
+    {icon:'🧪',title:'Delineamento',sub:'Como testar? Amostra, réplicas e teste estatístico.',content:`
+      <div class="g2" style="margin-bottom:14px">
+        <div class="def-box" style="border-left-color:var(--purple)"><div class="def-term" style="color:var(--purple)">Tamanho Amostral (n)</div>
+        <div class="def-body">Maior n → menor EP → maior <strong>poder estatístico</strong>. Regra geral: n ≥ 30 para Teorema Central do Limite.</div></div>
+        <div class="def-box" style="border-left-color:var(--teal)"><div class="def-term" style="color:var(--teal)">Réplicas Verdadeiras</div>
+        <div class="def-body">Unidades experimentais <strong>independentes</strong>. Pseudorréplicas inflam artificialmente n e invalidam o teste estatístico!</div></div>
+      </div>
+      <div class="def-box" style="border-left-color:var(--pink)"><div class="def-term" style="color:var(--pink)">Escolha do Teste</div>
+      <div class="def-body"><strong>Dados normais + paramétrico:</strong> t-test, ANOVA<br><strong>Dados não-normais + não-paramétrico:</strong> Mann-Whitney, Kruskal-Wallis<br><strong>Dados categóricos:</strong> Qui-quadrado, Fisher</div></div>
+      <button class="btn btn-gold" style="margin-top:12px" onclick="jComplete()">✅ Concluir Jornada</button>
+      <div id="j-complete" style="margin-top:14px"></div>
+    `}
+  ];
+  return steps.map((st,i)=>`
+    <div class="journey-step${i===0?' active':''}" id="jstep-${i}">
+      <div class="journey-step-num" id="jnum-${i}">${st.icon}</div>
+      <div class="journey-step-body">
+        <div class="journey-step-title" style="cursor:pointer" onclick="activateStep(${i})">${i+1}. ${st.title}</div>
+        <div class="journey-step-sub">${st.sub}</div>
+        <div class="journey-step-content" id="jcontent-${i}">${st.content}</div>
+        ${i<4?`<button class="btn btn-ghost" style="margin-top:10px;font-size:12px" onclick="nextStep(${i})">Próximo passo →</button>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function activateStep(i){
+  document.querySelectorAll('.journey-step').forEach((s,j)=>{
+    s.classList.toggle('active',j===i);
+    const content=document.getElementById(`jcontent-${j}`);
+    if(content)content.style.display=j===i?'block':'none';
+  });
+  updateJourneyProgress(i);
+}
+
+function nextStep(i){activateStep(i+1);}
+
+function updateJourneyProgress(i){
+  const pct=((i+1)/5*100).toFixed(0);
+  const bar=document.getElementById('journey-prog');
+  const lbl=document.getElementById('journey-prog-lbl');
+  if(bar)bar.style.width=pct+'%';
+  if(lbl)lbl.textContent=`Etapa ${i+1} de 5`;
+  const num=document.getElementById(`jnum-${i}`);
+  if(num)num.style.boxShadow='0 0 20px rgba(245,166,35,.5)';
+}
+
+async function jAiCheck(type,text){
+  if(!text.trim()){showToast('⚠️ Escreva algo primeiro!');return;}
+  const el=document.getElementById(`j-ai-${type==='pergunta'?'perg':'hip'}`);
+  el.style.display='block';
+  el.innerHTML=`<div class="ai-thinking">🤖 IA analisando <div class="dots"><span></span><span></span><span></span></div></div>`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,
+        system:`Você é professor de Biologia especialista em metodologia científica. Analise ${type==='pergunta'?'a pergunta científica':'a hipótese'} em português. Seja direto, didático e entusiasmado. Use emojis estrategicamente. Estruture assim:\n✅ Pontos fortes:\n⚠️ Pontos a melhorar:\n💡 Sugestão de melhoria:\n🎯 Veredicto (1 linha)`,
+        messages:[{role:"user",content:text}]})});
+    const d=await res.json();
+    el.innerHTML=`<div style="font-size:11px;color:var(--blue);margin-bottom:8px;letter-spacing:1px;font-family:var(--font-m)">● IA — ANÁLISE</div>${d.content[0].text.replace(/\n/g,'<br>')}`;
+  }catch(e){el.innerHTML=`<span style="color:var(--red)">Erro: ${e.message}</span>`;}
+}
+
+async function jLaunch(type,text){
+  if(!text.trim()){showToast('⚠️ Escreva o conteúdo!');return;}
+  let act={type:'multipla',question:text,launched:Date.now(),responses:{},jtype:type};
+  if(type==='hipotese_vote'){act.options=['✅ Testável','❌ Não testável','🔄 Precisa melhorar'];}
+  else if(type==='observacao'){act.type='categorica';act.question='O que você observaria neste cenário? '+text;}
+  else if(type==='pergunta'){act.options=['👍 Boa pergunta','⚠️ Precisa ser mais específica','❌ Não é testável','💡 Ótima! Com pequenos ajustes'];}
+  await _set(_ref(db,`plstat/${S.sala}/activity`),act);
+  showPanel('aovivo');showToast('📡 Lançado para a turma!');
+}
+
+async function jVarsLaunch(){
+  const vi=document.getElementById('j-vi')?.value?.trim()||'';
+  const vd=document.getElementById('j-vd')?.value?.trim()||'';
+  if(!vi||!vd){showToast('⚠️ Preencha VI e VD!');return;}
+  const act={type:'arrastar',question:'Classifique as variáveis da nossa hipótese',cards:[vi,vd,'temperatura da água','pH','condutividade'],launched:Date.now(),responses:{}};
+  await _set(_ref(db,`plstat/${S.sala}/activity`),act);
+  showPanel('aovivo');showToast('📡 Atividade de arraste lançada!');
+}
+
+function jComplete(){
+  const el=document.getElementById('j-complete');
+  el.innerHTML=`<div style="background:rgba(39,201,126,.1);border:1.5px solid rgba(39,201,126,.3);border-radius:12px;padding:24px;text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">🎉</div>
+    <div style="font-family:var(--font-h);font-size:22px;font-weight:700;color:var(--green)">Jornada Concluída!</div>
+    <div style="font-size:13px;color:var(--text2);margin-top:8px">Sua turma completou todas as etapas do método científico.<br>Da observação ao delineamento experimental em uma única aula!</div>
+    <button class="btn btn-gold" style="margin-top:16px" onclick="dlJourney()">⬇ Baixar resumo da jornada</button>
+  </div>`;
+  document.querySelectorAll('.journey-step-num').forEach(n=>n.classList.add?n.style.borderColor='var(--green)':'');
+}
+
+function dlJourney(){
+  const lines=['JORNADA DA PERGUNTA CIENTÍFICA','Penso, Logo Faço Estatística!','Sala: '+S.sala,'Data: '+new Date().toLocaleDateString('pt-BR'),'',''];
+  const fields=['j-obs','j-perg','j-hip','j-vi','j-vd'];
+  const names=['Observação','Pergunta','Hipótese','Variável Independente','Variável Dependente'];
+  fields.forEach((id,i)=>{const el=document.getElementById(id);if(el&&el.value)lines.push(names[i]+': '+el.value);});
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jornada_cientifica.txt';a.click();
+}
+
+/* ═══════════════════════════════════════════════
+   MÓDULOS DIDÁTICOS
+═══════════════════════════════════════════════ */
+function pDescritiva(){return`
+<div class="ph"><div class="ph-title">Estatística <em>Descritiva</em></div><div class="ph-sub">Clique em cada conceito para ver a definição completa com exemplos biológicos.</div></div>
+<div class="g3">
+  ${[
+    ['📐','Medidas de Tendência Central','Média, Mediana, Moda','media_mediana','c-blue'],
+    ['📏','Medidas de Dispersão','DP, Variância, CV, IQR','dispersao','c-gold'],
+    ['📊','Distribuição Normal','Sino de Gauss, Z-score','normal','c-green'],
+    ['🔢','Frequências','Absoluta, Relativa, Acumulada','frequencia','c-purple'],
+    ['📈','Assimetria & Curtose','Skewness, Kurtosis','assimetria','c-pink'],
+    ['🔗','Correlação','r de Pearson, Spearman','correlacao','c-teal'],
+  ].map(([ic,t,sub,key,c])=>`
+    <div class="concept-card" onclick="openConceptModal('${key}')">
+      <div class="cc-icon">${ic}</div>
+      <div class="cc-title">${t}</div>
+      <div class="cc-sub">${sub}</div>
+      <span class="cc-tag ${c}" style="background:rgba(var(--${c.replace('c-','')},0),0);border:1px solid currentColor">ver definição →</span>
+    </div>
+  `).join('')}
+</div>
+${descrCanvas()}
+`}
+
+function descrCanvas(){return`
+<div class="card" style="margin-top:16px">
+  <div class="card-label">Explorador Interativo — Distribuição Normal</div>
+  <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;font-family:var(--font-m)">MÉDIA (μ)</label>
+    <input type="range" id="sl-mean" min="0" max="100" value="50" style="width:120px" oninput="updateNormal()"><span id="sl-mean-v" style="font-family:var(--font-m);font-size:12px;color:var(--accent);margin-left:8px">50</span></div>
+    <div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px;font-family:var(--font-m)">DESVIO PADRÃO (σ)</label>
+    <input type="range" id="sl-std" min="2" max="30" value="10" style="width:120px" oninput="updateNormal()"><span id="sl-std-v" style="font-family:var(--font-m);font-size:12px;color:var(--blue);margin-left:8px">10</span></div>
+  </div>
+  <canvas id="cv-normal" height="180"></canvas>
+  <div class="chart-didactic">
+    <div class="did-row"><span class="did-sym">68%</span><div class="did-txt">dos dados estão entre μ−σ e μ+σ (área laranja)</div></div>
+    <div class="did-row"><span class="did-sym">95%</span><div class="did-txt">dos dados estão entre μ−2σ e μ+2σ</div></div>
+    <div class="did-row"><span class="did-sym">99.7%</span><div class="did-txt">dos dados estão entre μ−3σ e μ+3σ (Regra 68-95-99.7)</div></div>
+  </div>
+</div>`}
+
+function updateNormal(){
+  const mean=parseFloat(document.getElementById('sl-mean')?.value||50);
+  const std=parseFloat(document.getElementById('sl-std')?.value||10);
+  document.getElementById('sl-mean-v').textContent=mean;
+  document.getElementById('sl-std-v').textContent=std;
+  const c=document.getElementById('cv-normal');if(!c)return;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||600;c.width=W;c.height=200;
+  ctx.clearRect(0,0,W,200);
+  const p={l:40,r:20,t:20,b:40};
+  const minX=mean-4*std,maxX=mean+4*std;
+  const xs=v=>p.l+(W-p.l-p.r)*((v-minX)/(maxX-minX));
+  const pdf=x=>Math.exp(-.5*((x-mean)/std)**2)/(std*Math.sqrt(2*Math.PI));
+  const steps=300,step=(maxX-minX)/steps;
+  let maxP=0;for(let i=0;i<=steps;i++){const p2=pdf(minX+i*step);if(p2>maxP)maxP=p2;}
+  const ys=v=>p.t+(200-p.t-p.b)*(1-v/maxP);
+  // fill zones
+  [[mean-std,mean+std,'rgba(245,166,35,.2)'],[mean-2*std,mean+2*std,'rgba(74,158,255,.12)'],[mean-3*std,mean+3*std,'rgba(39,201,126,.07)']].forEach(([lo,hi,col])=>{
+    ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(xs(lo),ys(0));
+    for(let i=0;i<=steps;i++){const x=minX+i*step;if(x>=lo&&x<=hi)ctx.lineTo(xs(x),ys(pdf(x)));}
+    ctx.lineTo(xs(hi),ys(0));ctx.closePath();ctx.fill();
+  });
+  // curve
+  ctx.strokeStyle='#f5a623';ctx.lineWidth=3;ctx.beginPath();
+  for(let i=0;i<=steps;i++){const x=minX+i*step;i===0?ctx.moveTo(xs(x),ys(pdf(x))):ctx.lineTo(xs(x),ys(pdf(x)));}ctx.stroke();
+  // mean line
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(xs(mean),p.t);ctx.lineTo(xs(mean),200-p.b);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#e8edf5';ctx.font='bold 11px JetBrains Mono,monospace';ctx.textAlign='center';ctx.fillText('μ',xs(mean),p.t-4);
+  // x axis
+  ctx.strokeStyle='#252d3d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,200-p.b);ctx.lineTo(W-p.r,200-p.b);ctx.stroke();
+  [mean-2*std,mean-std,mean,mean+std,mean+2*std].forEach(v=>{
+    ctx.fillStyle='#4a5568';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='center';ctx.fillText(v.toFixed(1),xs(v),200-p.b+16);
+  });
+}
+
+function pPopulacao(){return`
+<div class="ph"><div class="ph-title">População, <em>Amostra</em> & Censo</div></div>
+<div class="g3">
+  <div class="def-box" style="border-left-color:var(--blue)">
+    <div class="def-term" style="color:var(--blue)">🌍 População (N)</div>
+    <div class="def-body">Conjunto <strong>completo</strong> de elementos que compartilham uma característica de interesse. Parâmetros populacionais: μ, σ, π.<br><br>Geralmente <strong>impossível de medir</strong> diretamente em Biologia.</div>
+    <div class="def-example">Todos os jacarés-do-pantanal (N ≈ 10 milhões). Todas as bromélias do cerrado mato-grossense.</div>
+  </div>
+  <div class="def-box" style="border-left-color:var(--accent)">
+    <div class="def-term" style="color:var(--accent)">🔬 Amostra (n)</div>
+    <div class="def-body">Subconjunto <strong>representativo</strong> da população. Estatísticas amostrais: x̄, s, p̂.<br><br>Deve ser <strong>aleatória</strong> para permitir inferência válida à população.</div>
+    <div class="def-example">50 jacarés capturados aleatoriamente em 10 áreas do Pantanal. 200 bromélias em parcelas sistemáticas.</div>
+  </div>
+  <div class="def-box" style="border-left-color:var(--green)">
+    <div class="def-term" style="color:var(--green)">📋 Censo</div>
+    <div class="def-body">Levantamento da <strong>população inteira</strong>. Elimina erro amostral, mas é custoso e muitas vezes impraticável em ecologia.<br><br>Viável para populações <strong>pequenas e bem delimitadas</strong>.</div>
+    <div class="def-example">Censo de árvores em um fragmento florestal de 1 hectare. IBGE faz censo humano do Brasil.</div>
+  </div>
+</div>
+<div class="card" style="margin-top:14px">
+  <div class="card-label">⚡ Atividade ao vivo — Lance para a turma</div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Pergunte à turma: qual é a unidade amostral adequada para cada estudo?</p>
+  <button class="btn btn-gold" onclick="lançarPopAct()">📡 Lançar quiz sobre população vs amostra</button>
+</div>
+`}
+
+async function lançarPopAct(){
+  await _set(_ref(db,`plstat/${S.sala}/activity`),{
+    type:'multipla',question:'Você quer estudar o efeito da chuva na altura de plantas de soja no MT. Sua população é:',
+    options:['Todas as plantas de soja do MT','As plantas no seu experimento','As plantas de soja do mundo','Apenas as plantas sadias'],
+    launched:Date.now(),responses:{}
+  });
+  showPanel('aovivo');showToast('📡 Quiz lançado!');
+}
+
+function pReplicas(){return`
+<div class="ph"><div class="ph-title">Réplicas & <em>Pseudorréplicas</em></div></div>
+<div class="def-box">
+  <div class="def-term">🔁 Réplica Verdadeira</div>
+  <div class="def-body">Unidade experimental <strong>independente</strong> que recebe o tratamento de forma autônoma. É o "n" que entra nos testes estatísticos.<br><br>Critério de independência: o resultado de uma unidade <strong>não deve influenciar</strong> o de outra.</div>
+  <div class="def-example">10 aquários separados com pH 7 (não 1 aquário dividido em 10 — isso seria pseudorréplica!)</div>
+</div>
+<div class="def-box" style="border-left-color:var(--red)">
+  <div class="def-term" style="color:var(--red)">⚠️ Pseudorréplica</div>
+  <div class="def-body">Erro clássico: tratar medidas <strong>não independentes</strong> como se fossem réplicas verdadeiras.<br><br>Isso <strong>infla artificialmente o n</strong>, reduz o valor-p falsamente e pode levar a conclusões erradas!</div>
+  <div class="def-example">Medir 10 folhas da mesma planta como se fossem 10 plantas diferentes. Medir 5 peixes do mesmo aquário como se fossem 5 aquários.</div>
+</div>
+<div class="card" style="margin-top:14px">
+  <div class="card-label">⚡ Quiz ao vivo</div>
+  <button class="btn btn-gold" onclick="lançarReplicasAct()">📡 Turma identifica pseudorréplicas</button>
+</div>
+`}
+
+async function lançarReplicasAct(){
+  await _set(_ref(db,`plstat/${S.sala}/activity`),{
+    type:'multipla',question:'Em um experimento com 3 aquários por tratamento, você mede 5 peixes por aquário. Seu n verdadeiro é:',
+    options:['15 por tratamento (todos os peixes)','3 por tratamento (os aquários)','5 por tratamento (média dos aquários)','Depende do teste'],
+    launched:Date.now(),responses:{}
+  });
+  showPanel('aovivo');showToast('📡 Quiz lançado!');
+}
+
+function pTestes(){return`
+<div class="ph"><div class="ph-title">Testes <em>Estatísticos</em></div><div class="ph-sub">Como escolher o teste certo? Clique em cada teste para ver quando usar.</div></div>
+<div class="card" style="margin-bottom:16px">
+  <div class="card-label">🗺️ Mapa de Decisão</div>
+  <canvas id="cv-decision" height="300"></canvas>
+</div>
+<div class="g2">
+  ${[
+    ['t','⚖️ Teste t de Student','Compara médias de 2 grupos. Pressupõe normalidade e homogeneidade de variâncias.','parametrico','Quando usar: 2 grupos, dados contínuos, n razoável (≥30) ou normalidade confirmada.','Exemplo bio: Comparar comprimento médio de peixes em dois rios.'],
+    ['qui','χ² Qui-quadrado','Testa associação entre variáveis categóricas. Baseado em frequências observadas vs esperadas.','parametrico','Quando usar: dados em tabela de contingência, variáveis nominais/ordinais, frequências ≥5.','Exemplo bio: Há associação entre espécie de bromélia e região do cerrado?'],
+    ['anova','📊 ANOVA','Compara médias de 3+ grupos simultaneamente. Decompõe a variância total.','parametrico','Quando usar: ≥3 grupos, dados contínuos, normalidade. Post-hoc: Tukey, Duncan.','Exemplo bio: Biomassa de peixes difere entre 4 tipos de habitat?'],
+    ['mw','Mann-Whitney U','Alternativa não-paramétrica ao teste t. Compara distribuições/medianas de 2 grupos.','naoparametrico','Quando usar: dados não-normais, ordinais, n pequeno, outliers graves.','Exemplo bio: Diversidade de macroinvertebrados em 2 trechos de rio.'],
+  ].map(([k,t,def,tipo,quando,ex])=>`
+    <div class="concept-card" onclick="openTestModal('${k}')">
+      <div class="cc-title">${t}</div>
+      <div class="cc-sub">${def}</div>
+      <span class="cc-tag" style="color:${tipo==='parametrico'?'var(--blue)':'var(--pink)'};border:1px solid currentColor;margin-top:8px">${tipo==='parametrico'?'Paramétrico':'Não-paramétrico'}</span>
+    </div>
+  `).join('')}
+</div>
+<div class="card" style="margin-top:14px">
+  <div class="card-label">⚡ Atividade: Escolha o teste certo</div>
+  <button class="btn btn-gold" onclick="lançarTestesAct()">📡 Lançar para a turma</button>
+</div>
+`}
+
+async function lançarTestesAct(){
+  await _set(_ref(db,`plstat/${S.sala}/activity`),{
+    type:'multipla',question:'Você tem 3 grupos de peixes (rio limpo, moderado, poluído) com n=8 cada. Dados não-normais. Qual teste usar?',
+    options:['ANOVA paramétrica','Kruskal-Wallis (não-paramétrico)','Teste t (2 a 2)','Qui-quadrado'],
+    launched:Date.now(),responses:{}
+  });
+  showPanel('aovivo');showToast('📡 Quiz lançado!');
+}
+
+/* decision tree canvas */
+function drawDecisionTree(){
+  const c=document.getElementById('cv-decision');if(!c)return;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||700;c.width=W;c.height=300;
+  ctx.clearRect(0,0,W,300);
+  const nodes=[
+    {x:W/2,y:30,label:'Qual o\nobjetivo?',color:'#f5a623',w:120,h:36},
+    {x:W*.2,y:120,label:'Comparar\ngrupos',color:'#4a9eff',w:100,h:32},
+    {x:W*.8,y:120,label:'Associação/\nCorrelação',color:'#27c97e',w:110,h:32},
+    {x:W*.1,y:210,label:'2 grupos\n→ t / Mann-W',color:'#a78bfa',w:110,h:32},
+    {x:W*.35,y:210,label:'3+ grupos\n→ ANOVA/KW',color:'#f05a7e',w:110,h:32},
+    {x:W*.65,y:210,label:'Numéricas\n→ Pearson/Spearman',color:'#2dd4bf',w:140,h:32},
+    {x:W*.9,y:210,label:'Categóricas\n→ Qui-quadrado',color:'#fb923c',w:130,h:32},
+  ];
+  const edges=[[0,1],[0,2],[1,2],[1,3],[2,3],[2,4]]; // simplified
+  const conns=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
+  conns.forEach(([a,b])=>{
+    ctx.strokeStyle=nodes[b].color+'88';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(nodes[a].x,nodes[a].y+nodes[a].h/2);
+    ctx.lineTo(nodes[b].x,nodes[b].y-nodes[b].h/2);ctx.stroke();
+  });
+  nodes.forEach(n=>{
+    ctx.fillStyle=n.color+'22';ctx.strokeStyle=n.color;ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(n.x-n.w/2,n.y-n.h/2,n.w,n.h,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle=n.color;ctx.font=`bold 11px Barlow Condensed,sans-serif`;ctx.textAlign='center';
+    const lines=n.label.split('\n');
+    lines.forEach((l,i)=>ctx.fillText(l,n.x,n.y+(i-(lines.length-1)/2)*14));
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   BIBLIOTECA DE GRÁFICOS
+═══════════════════════════════════════════════ */
+function pGraficos(){return`
+<div class="ph"><div class="ph-title">Biblioteca de <em>Gráficos</em></div><div class="ph-sub">Explore cada tipo de gráfico com dados de exemplo. Clique para ver quando usar na Biologia.</div></div>
+<div class="g3" id="chart-lib-grid">
+  ${[
+    ['📦','Boxplot','Distribuição + outliers','box_demo'],
+    ['🎻','Violin Plot','Forma da distribuição','vio_demo'],
+    ['•·•','Jitter Plot','Dados brutos individuais','jit_demo'],
+    ['🍕','Pizza / Rosca','Proporções categóricas','pizza_demo'],
+    ['🌳','Árvore','Hierarquia e classificação','tree_demo'],
+  ].map(([ic,t,d,k])=>`
+    <div class="concept-card" onclick="showChartDemo('${k}')">
+      <div class="cc-icon">${ic}</div><div class="cc-title">${t}</div><div class="cc-sub">${d}</div>
+      <span class="cc-tag" style="color:var(--accent);border:1px solid var(--accent)">ver demo →</span>
+    </div>
+  `).join('')}
+</div>
+<div id="chart-demo-area" style="margin-top:16px"></div>
+`}
+
+function showChartDemo(key){
+  const demos={
+    box_demo:()=>{ const el=document.getElementById('chart-demo-area'); el.innerHTML=`<div class="chart-wrap"><div class="card-label">Boxplot — Dados de exemplo (altura de plantas, cm)</div><canvas id="cv-demo-box" height="200"></canvas>${didNum('box')}</div>`; setTimeout(()=>drawDemoBox(),50); },
+    vio_demo:()=>{ const el=document.getElementById('chart-demo-area'); el.innerHTML=`<div class="chart-wrap"><div class="card-label">Violin Plot — Dois grupos comparados</div><canvas id="cv-demo-vio" height="240"></canvas>${didNum('vio')}</div>`; setTimeout(()=>drawDemoVio(),50); },
+    pizza_demo:()=>{ const el=document.getElementById('chart-demo-area'); el.innerHTML=`<div class="chart-wrap"><div class="card-label">Pizza — Tipos sanguíneos (% populacionais)</div><canvas id="cv-demo-pizza" height="300"></canvas></div>`; setTimeout(()=>{ const f={'A+':34,'B+':8,'AB+':3,'O+':44,'A-':6,'O-':5}; drawPieRosca(f,Object.keys(f),100,'cv-demo-pizza',false); },50); },
+    tree_demo:()=>{ const el=document.getElementById('chart-demo-area'); el.innerHTML=`<div class="chart-wrap"><div class="card-label">Árvore de Classificação de Variáveis</div><canvas id="cv-tree" height="300"></canvas></div>`; setTimeout(()=>drawConsensus({cards:['altura','cor do olho','nº de ovos','temperatura']},{a:{altura:'quantcont','cor do olho':'qualnom','nº de ovos':'quantdisc',temperatura:'quantcont'},b:{altura:'quantcont','cor do olho':'qualnom','nº de ovos':'quantdisc',temperatura:'quantcont'}}),50); },
+    jit_demo:()=>{ const el=document.getElementById('chart-demo-area'); el.innerHTML=`<div class="chart-wrap"><div class="card-label">Jitter — Comprimento de peixes (cm) por habitat</div><canvas id="cv-jit" height="220"></canvas>${didNum('jit')}</div>`; const fake={}; for(let i=0;i<20;i++)fake[`peixe${i}`]={value:20+Math.random()*15+Math.sin(i)*5,ts:Date.now()}; setTimeout(()=>drawNum(fake,'cm'),50); },
+  };
+  if(demos[key])demos[key]();
+}
+
+function drawDemoBox(){
+  const fake={};const vals=[42,45,48,50,50,51,52,53,55,58,60,62,65];
+  vals.forEach((v,i)=>fake[`p${i}`]={value:v,ts:0});
+  drawNum(fake,'cm');
+}
+
+function drawDemoVio(){
+  const c=document.getElementById('cv-demo-vio');if(!c)return;
+  const ctx=c.getContext('2d');const W=c.offsetWidth||600;c.width=W;c.height=240;
+  ctx.clearRect(0,0,W,240);
+  // Two groups side by side
+  [[W*.3,[42,45,48,50,50,51,52,53,55,58],'#4a9eff','Grupo A'],[W*.7,[55,58,60,62,63,65,65,68,70,72],'#27c97e','Grupo B']].forEach(([cx2,vals,col,label])=>{
+    const n=vals.length,mean=vals.reduce((a,b)=>a+b)/n;
+    const std=Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1));
+    const sorted=[...vals].sort((a,b)=>a-b);
+    const minV=sorted[0]-5,maxV=sorted[n-1]+5;
+    const ys=v=>30+(240-70)*((v-minV)/(maxV-minV));
+    const kde=x=>{const h=std*1.06*Math.pow(n,-0.2);return vals.reduce((s,xi)=>s+Math.exp(-.5*((x-xi)/h)**2)/(h*Math.sqrt(2*Math.PI)),0)/n;};
+    const steps=80,step=(maxV-minV)/steps;
+    const dens=[];let maxD=0;
+    for(let i=0;i<=steps;i++){const v=minV+i*step;const d=kde(v);dens.push({v,d});if(d>maxD)maxD=d;}
+    const mw=50;
+    ctx.fillStyle=col+'33';ctx.beginPath();ctx.moveTo(cx2,ys(dens[0].v));
+    dens.forEach(({v,d})=>ctx.lineTo(cx2-d/maxD*mw,ys(v)));ctx.lineTo(cx2,ys(dens[steps].v));
+    dens.slice().reverse().forEach(({v,d})=>ctx.lineTo(cx2+d/maxD*mw,ys(v)));ctx.closePath();ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;
+    ctx.beginPath();dens.forEach(({v,d},i)=>i===0?ctx.moveTo(cx2-d/maxD*mw,ys(v)):ctx.lineTo(cx2-d/maxD*mw,ys(v)));ctx.stroke();
+    ctx.beginPath();dens.forEach(({v,d},i)=>i===0?ctx.moveTo(cx2+d/maxD*mw,ys(v)):ctx.lineTo(cx2+d/maxD*mw,ys(v)));ctx.stroke();
+    // median
+    const med=sorted[Math.floor(n/2)];
+    ctx.strokeStyle='#f5a623';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx2-15,ys(med));ctx.lineTo(cx2+15,ys(med));ctx.stroke();
+    ctx.fillStyle=col;ctx.font='bold 12px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText(label,cx2,220);
+    ctx.fillStyle='#8b96aa';ctx.font='10px JetBrains Mono,monospace';ctx.fillText('x̄='+mean.toFixed(1),cx2,234);
+  });
+}
+
+function initGraficos(){ setTimeout(()=>{ updateNormal(); drawDecisionTree(); },300); }
+
+/* ═══════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════ */
+const CONCEPTS={
+  media_mediana:{title:'Medidas de Tendência Central',content:`
+    <div class="def-box"><div class="def-term">Média Aritmética (x̄ ou μ)</div><div class="def-body">x̄ = Σxᵢ/n. Sensível a outliers. Use quando dados são simétricos e sem valores extremos.</div><div class="def-example">Biomassa média de peixes em um lago: soma de todas as biomassas ÷ n peixes.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Mediana (Md)</div><div class="def-body">Valor central quando os dados são ordenados. Robusta a outliers. Preferida para dados assimétricos.</div><div class="def-example">Renda de populações humanas, concentração de poluentes (geralmente assimétricos).</div></div>
+    <div class="def-box" style="border-left-color:var(--green)"><div class="def-term" style="color:var(--green)">Moda (Mo)</div><div class="def-body">Valor(es) mais frequente(s). Única medida aplicável a dados nominais. Distribuição pode ser unimodal, bimodal ou multimodal.</div><div class="def-example">Espécie mais abundante em um levantamento; coloração mais comum de flores.</div></div>
+  `},
+  dispersao:{title:'Medidas de Dispersão',content:`
+    <div class="def-box"><div class="def-term">Variância (s²)</div><div class="def-body">Média dos quadrados dos desvios: s² = Σ(xᵢ-x̄)²/(n-1). Unidade ao quadrado — difícil de interpretar diretamente.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Desvio Padrão (s ou DP)</div><div class="def-body">DP = √s². Na mesma unidade dos dados. 68% dos dados ficam em x̄ ± 1DP (se normal). Mede variabilidade absoluta.</div><div class="def-example">DP = 5 cm em altura de plantas significa que a maioria das plantas varia ±5 cm da média.</div></div>
+    <div class="def-box" style="border-left-color:var(--gold)"><div class="def-term" style="color:var(--gold)">Coeficiente de Variação (CV%)</div><div class="def-body">CV = (DP/x̄)×100. Permite comparar variabilidade de variáveis em escalas diferentes. CV < 15% = baixa variação; 15-30% = moderada; >30% = alta.</div><div class="def-example">Comparar variabilidade de peso (kg) vs comprimento (cm) — CV torna possível!</div></div>
+    <div class="def-box" style="border-left-color:var(--purple)"><div class="def-term" style="color:var(--purple)">IQR (Amplitude Interquartil)</div><div class="def-body">IQR = Q3 − Q1. Contém os 50% centrais dos dados. Não é afetado por outliers. Base do boxplot.</div></div>
+  `},
+  normal:{title:'Distribuição Normal',content:`
+    <div class="def-box"><div class="def-term">Distribuição Normal (Gaussiana)</div><div class="def-body">A mais importante em estatística. Parâmetros: μ (média) e σ (DP). Simétrica, sino. A maioria dos testes paramétricos pressupõe normalidade.</div><div class="def-example">Altura humana, erros de medição, muitos caracteres biológicos quantitativos.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Regra 68-95-99,7%</div><div class="def-body">68% dos dados → μ ± 1σ | 95% → μ ± 2σ | 99,7% → μ ± 3σ. Fundamental para intervalos de confiança.</div></div>
+    <div class="def-box" style="border-left-color:var(--green)"><div class="def-term" style="color:var(--green)">Como testar normalidade?</div><div class="def-body">Shapiro-Wilk (n<50), Kolmogorov-Smirnov (n≥50), Q-Q plot, histograma. Se p>0,05 → dados compatíveis com normalidade.</div></div>
+  `},
+  frequencia:{title:'Frequências',content:`
+    <div class="def-box"><div class="def-term">Frequência Absoluta (fᵢ)</div><div class="def-body">Número de vezes que um valor ocorre. Contagem bruta. Ex: 12 indivíduos de espécie A.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Frequência Relativa (fr)</div><div class="def-body">fr = fᵢ/n. Proporção em relação ao total. Permite comparar entre amostras de tamanhos diferentes.</div></div>
+    <div class="def-box" style="border-left-color:var(--green)"><div class="def-term" style="color:var(--green)">Frequência Acumulada (FA)</div><div class="def-body">Soma das frequências até determinada classe. Útil para percentis e quartis.</div></div>
+  `},
+  assimetria:{title:'Assimetria & Curtose',content:`
+    <div class="def-box"><div class="def-term">Assimetria (Skewness)</div><div class="def-body">Mede o desvio da simetria. Sk=0: simétrica. Sk>0: cauda direita (positiva). Sk<0: cauda esquerda (negativa).</div><div class="def-example">Riqueza de espécies por parcela costuma ser assimétrica positiva: muitas parcelas pobres, poucas ricas.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Curtose (Kurtosis)</div><div class="def-body">Medida do "achatamento". Leptocúrtica (K>3): pico alto, caudas pesadas. Platicúrtica (K<3): achatada. Mesocúrtica (K=3): normal.</div></div>
+  `},
+  correlacao:{title:'Correlação',content:`
+    <div class="def-box"><div class="def-term">Correlação de Pearson (r)</div><div class="def-body">Mede associação linear entre duas variáveis contínuas normais. r ∈ [-1,1]. |r|>0,7 = forte; 0,3-0,7 = moderada; <0,3 = fraca.</div><div class="def-example">Correlação entre precipitação e riqueza de espécies de anfíbios.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Correlação de Spearman (ρ)</div><div class="def-body">Versão não-paramétrica. Baseada em ranks. Use quando dados não são normais ou têm outliers.</div></div>
+    <div class="def-box" style="border-left-color:var(--red)"><div class="def-term" style="color:var(--red)">⚠️ Correlação ≠ Causalidade!</div><div class="def-body">r significativo apenas indica associação. A causa pode ser uma terceira variável (variável de confusão). Para inferir causalidade: experimento controlado com manipulação.</div><div class="def-example">Sorvete e afogamentos estão correlacionados — mas a causa é o verão (variável de confusão)!</div></div>
+  `},
+};
+
+const TEST_MODALS={
+  t:{title:'Teste t de Student',content:`
+    <div class="def-box"><div class="def-term">Quando usar</div><div class="def-body">Comparar médias de <strong>2 grupos independentes</strong> ou 1 grupo vs. valor esperado (1 amostra), ou antes/depois (pareado).<br>Pressupõe: normalidade, homogeneidade de variâncias.</div><div class="def-example">Peso de peixes em rio preservado vs. degradado.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Hipóteses</div><div class="def-body">H₀: μ₁ = μ₂ (médias iguais) | H₁: μ₁ ≠ μ₂ (bicaudal) ou μ₁ > μ₂ (unicaudal)<br>Decisão: se p ≤ α (0,05) → rejeita H₀.</div></div>
+    <div class="def-box" style="border-left-color:var(--gold)"><div class="def-term" style="color:var(--gold)">Cuidados</div><div class="def-body">Verificar normalidade (Shapiro-Wilk). Verificar homocedasticidade (Levene). Se violado → usar Mann-Whitney.</div></div>
+  `},
+  qui:{title:'Qui-quadrado (χ²)',content:`
+    <div class="def-box"><div class="def-term">Quando usar</div><div class="def-body">Dados <strong>categóricos</strong> em tabela de contingência. Testa se há associação entre duas variáveis qualitativas, ou se a distribuição observada difere da esperada.</div><div class="def-example">Há associação entre estação do ano e ocorrência de flores em X espécies?</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Fórmula</div><div class="def-body">χ² = Σ (O-E)²/E. O = observado, E = esperado. Comparado à distribuição χ² com gl graus de liberdade.</div></div>
+    <div class="def-box" style="border-left-color:var(--red)"><div class="def-term" style="color:var(--red)">Limitação</div><div class="def-body">Frequências esperadas devem ser ≥5 em cada célula. Se não: usar Teste Exato de Fisher.</div></div>
+  `},
+  anova:{title:'ANOVA (Análise de Variância)',content:`
+    <div class="def-box"><div class="def-term">Quando usar</div><div class="def-body">Comparar médias de <strong>3 ou mais grupos</strong>. Decompõe variância em: variância entre grupos (tratamento) e variância dentro dos grupos (erro).</div><div class="def-example">Biomassa de peixes em 4 tipos de vegetação ripária.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Razão F</div><div class="def-body">F = variância entre grupos / variância dentro dos grupos. F grande → grupos distintos. Se p≤0,05 → ao menos um par difere.</div></div>
+    <div class="def-box" style="border-left-color:var(--green)"><div class="def-term" style="color:var(--green)">Testes Post-Hoc</div><div class="def-body">ANOVA apenas diz que <em>algum</em> grupo difere. Tukey HSD, Bonferroni ou Duncan identificam <em>quais pares</em> diferem.</div></div>
+  `},
+  mw:{title:'Mann-Whitney U',content:`
+    <div class="def-box"><div class="def-term">Quando usar</div><div class="def-body">Alternativa <strong>não-paramétrica</strong> ao teste t. Compara distribuições (medianas) de 2 grupos independentes. Use quando dados não atendem a normalidade.</div><div class="def-example">Riqueza de espécies (dados contagem, geralmente não-normais) em 2 áreas.</div></div>
+    <div class="def-box" style="border-left-color:var(--blue)"><div class="def-term" style="color:var(--blue)">Como funciona</div><div class="def-body">Converte dados em ranks (postos). Testa se os ranks de um grupo tendem a ser maiores que os do outro. Robusto a outliers e assimetria.</div></div>
+    <div class="def-box" style="border-left-color:var(--gold)"><div class="def-term" style="color:var(--gold)">3+ grupos não-paramétrico</div><div class="def-body">Para ≥3 grupos não-normais: usar <strong>Kruskal-Wallis</strong> (equivalente não-paramétrico da ANOVA).</div></div>
+  `},
+};
+
+function openConceptModal(key){
+  const c=CONCEPTS[key];if(!c)return;
+  document.getElementById('modal-content').innerHTML=`<div style="font-family:var(--font-h);font-size:24px;font-weight:700;margin-bottom:20px;color:var(--accent)">${c.title}</div>${c.content}`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function openTestModal(key){
+  const c=TEST_MODALS[key];if(!c)return;
+  document.getElementById('modal-content').innerHTML=`<div style="font-family:var(--font-h);font-size:24px;font-weight:700;margin-bottom:20px;color:var(--accent)">${c.title}</div>${c.content}`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function openModal(title,body){
+  document.getElementById('modal-content').innerHTML=`<div style="font-family:var(--font-h);font-size:22px;font-weight:700;margin-bottom:16px;color:var(--accent)">${title}</div><div class="def-body" style="font-size:14px;line-height:1.7">${body}</div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+/* ═══════════════════════════════════════════════
+   ALUNO SHELL
+═══════════════════════════════════════════════ */
+function buildAlunoShell(){
+  document.getElementById('sidebar').innerHTML=`
+    <div class="sb-item active" data-p="atividade" onclick="showPanel('atividade')"><span class="si">📝</span>Atividade</div>
+    <div class="sb-item" data-p="turma" onclick="showPanel('turma')"><span class="si">👥</span>Turma</div>
+    <div class="sb-item" data-p="glossario" onclick="showPanel('glossario')"><span class="si">📚</span>Glossário</div>
+    <div class="sb-footer"><span style="color:var(--green)">●</span> sala ${S.sala}</div>
+  `;
+  document.getElementById('main-panel').innerHTML=`
+    <div id="panel-atividade" class="panel active">
+      <div class="student-wait"><div class="sw-icon">🔬</div><div class="sw-title">Aguardando atividade…</div><div class="sw-sub">O professor vai lançar em instantes.</div></div>
+    </div>
+    <div id="panel-turma" class="panel">
+      <div class="ph"><div class="ph-title">Sala <em>${S.sala}</em></div></div>
+      <div class="card" id="turma-list">Carregando...</div>
+    </div>
+    <div id="panel-glossario" class="panel">
+      <div class="ph"><div class="ph-title">📚 <em>Glossário</em> Rápido</div></div>
+      <div class="g2">
+        ${[['x̄','Média','Soma dividida por n'],['Md','Mediana','Valor central ordenado'],['DP','Desvio Padrão','Dispersão em torno da média'],['EP','Erro Padrão','Incerteza da média (DP/√n)'],['CV','Coef. Variação','DP/média × 100 (%)'],['H₀','Hipótese Nula','Não há efeito/diferença'],['H₁','Hip. Alternativa','Há efeito/diferença'],['p','Valor-p','Prob. de obter resultado se H₀ for verdadeira'],['α','Nível de sig.','Limiar de decisão (geralmente 0,05)'],['IQR','Amp. Interquartil','Q3 − Q1 (50% centrais)']].map(([s,n,d])=>`
+          <div class="stat-box c-gold" style="text-align:left;cursor:default">
+            <div class="stat-sym" style="font-size:16px">${s}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin:4px 0">${n}</div>
+            <div style="font-size:11px;color:var(--text2)">${d}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+  listenAll();
+  _onValue(_ref(db,`plstat/${S.sala}/alunos`),snap=>{
+    const a=snap.val()||{};const el=document.getElementById('turma-list');
+    if(el)el.innerHTML=Object.keys(a).map(n=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;display:flex;align-items:center;gap:10px"><span>👤</span>${n}${n===S.name?'<span style="font-size:10px;color:var(--green);font-weight:700;font-family:var(--font-m)"> • VOCÊ</span>':''}</div>`).join('');
+  });
+}
+
+function renderStudentAct(act){
+  const el=document.getElementById('panel-atividade');if(!el)return;
+  if(!act){
+    el.innerHTML=`<div class="student-wait"><div class="sw-icon">🔬</div><div class="sw-title">Aguardando atividade…</div><div class="sw-sub">O professor vai lançar em instantes.</div></div>`;
+    return;
+  }
+  S.myVote=null;S.dragAnswers={};S.selectedMC=null;
+  const types={numerica:'Pergunta Numérica',categorica:'Pergunta Categórica',arrastar:'Arrastar & Classificar',multipla:'Múltipla Escolha'};
+  let body='';
+  if(act.type==='numerica')body=`<input class="s-inp" id="s-num" type="number" placeholder="Digite o valor (${act.unit||'número'})" step="any"><button class="s-submit" onclick="sSubmitNum()">Enviar</button>`;
+  else if(act.type==='categorica')body=`<input class="s-inp" id="s-cat" type="text" placeholder="Digite sua resposta"><button class="s-submit" onclick="sSubmitCat()">Enviar</button>`;
+  else if(act.type==='multipla')body=`<div class="mc-opts">${act.options.map((o,i)=>`<button class="mc-opt" onclick="sMC(this,'${o.replace(/'/g,"\\'")}')"><span style="font-family:var(--font-m);font-size:11px;color:var(--text3);margin-right:10px">${String.fromCharCode(65+i)}</span>${o}</button>`).join('')}</div><button class="s-submit" id="smc-btn" disabled onclick="sSubmitMC()">Selecione uma opção</button>`;
+  else if(act.type==='arrastar')body=sDragBody(act);
+
+  el.innerHTML=`<div class="s-act-card">
+    <div class="s-act-head"><div class="s-act-type">${types[act.type]||act.type}</div><div class="s-act-q">${act.question||'Classifique as variáveis'}</div></div>
+    <div class="s-act-body" id="s-body">${body}</div>
+  </div>`;
+}
+
+function sDragBody(act){
+  const cards=(act.cards||[]).map(c=>`<div class="drag-card" draggable="true" data-card="${c}" ondragstart="dStart(event,'${c}')">${c}</div>`).join('');
+  const zones=CATS.map(cat=>`
+    <div style="border-radius:10px;padding:12px;border:2px dashed var(--border2);min-height:80px;transition:all .2s" data-cat="${cat.k}" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event,'${cat.k}')">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${cat.c};font-family:var(--font-m);margin-bottom:8px">${cat.b} · ${cat.l}</div>
+      <div id="zone-${cat.k}" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>`).join('');
+  return`
+    <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:14px;border:2px dashed var(--border2)" id="drag-pool" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event,'pool')">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);font-family:var(--font-m);margin-bottom:8px">ARRASTE OS CARDS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${cards}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">${zones}</div>
+    <button class="s-submit" onclick="sSubmitDrag('${(act.cards||[]).join('|')}')">Enviar classificação</button>`;
+}
+
+let _dc=null;
+function dStart(e,c){_dc=c;e.dataTransfer.effectAllowed='move';}
+function dOver(e){e.preventDefault();e.currentTarget.style.borderColor='var(--accent)';}
+function dLeave(e){e.currentTarget.style.borderColor='';}
+function dDrop(e,cat){
+  e.preventDefault();e.currentTarget.style.borderColor='';
+  if(!_dc)return;const card=_dc;_dc=null;
+  CATS.forEach(c=>{const z=document.getElementById('zone-'+c.k);if(z)z.querySelectorAll(`[data-card="${card}"]`).forEach(el=>el.remove());if(S.dragAnswers[card]===c.k)delete S.dragAnswers[card];});
+  const pool=document.getElementById('drag-pool');
+  if(pool)pool.querySelectorAll(`[data-card="${card}"]`).forEach(el=>el.remove());
+  const cardEl=`<div class="drag-card" draggable="true" data-card="${card}" ondragstart="dStart(event,'${card}')">${card}</div>`;
+  if(cat==='pool'){const p=document.getElementById('drag-pool');if(p)p.insertAdjacentHTML('beforeend',cardEl);}
+  else{const z=document.getElementById('zone-'+cat);if(z)z.insertAdjacentHTML('beforeend',cardEl);S.dragAnswers[card]=cat;}
+}
+
+async function sSubmitNum(){const v=document.getElementById('s-num')?.value?.trim();if(!v||isNaN(+v)){showToast('⚠️ Valor numérico!');return;}await _set(_ref(db,`plstat/${S.sala}/activity/responses/${S.name}`),{value:+v,ts:Date.now()});sSuccess();}
+async function sSubmitCat(){const v=document.getElementById('s-cat')?.value?.trim();if(!v){showToast('⚠️ Digite!');return;}await _set(_ref(db,`plstat/${S.sala}/activity/responses/${S.name}`),{value:v,ts:Date.now()});sSuccess();}
+function sMC(btn,val){document.querySelectorAll('.mc-opt').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');S.selectedMC=val;const sb=document.getElementById('smc-btn');if(sb){sb.disabled=false;sb.textContent='Enviar resposta';}}
+async function sSubmitMC(){if(!S.selectedMC){showToast('⚠️ Selecione!');return;}await _set(_ref(db,`plstat/${S.sala}/activity/responses/${S.name}`),{value:S.selectedMC,ts:Date.now()});sSuccess();}
+async function sSubmitDrag(cardsStr){
+  const cards=cardsStr.split('|');
+  const missing=cards.filter(c=>!S.dragAnswers[c]);
+  if(missing.length){showToast(`⚠️ Classifique: ${missing.join(', ')}`);return;}
+  await _set(_ref(db,`plstat/${S.sala}/activity/responses/${S.name}`),{...S.dragAnswers,ts:Date.now()});sSuccess();
+}
+function sSuccess(){const b=document.getElementById('s-body');if(!b)return;b.innerHTML=`<div class="s-success"><div class="s-success-icon">🎉</div><div class="s-success-txt">Resposta enviada!</div><div class="s-success-sub">Acompanhe os resultados com o professor.</div></div>`;}
+
+/* ═══════════════════════════════════════════════
+   PANEL: INSERIR DADOS MANUALMENTE
+═══════════════════════════════════════════════ */
+// Local data store for solo/professor manual entry
+let _localData = {responses:{}, type:'numerica', question:'Dados inseridos manualmente', unit:''};
+
+function pDadosManual(){return`
+<div class="ph"><div class="ph-title">✏️ Inserir <em>Dados</em></div><div class="ph-sub">Insira dados manualmente para explorar os gráficos — sem precisar de alunos conectados.</div></div>
+<div class="card">
+  <div class="card-label">Tipo de dados</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="btn btn-ghost" id="dtbtn-num" onclick="setManualType('numerica',this)" style="border-color:var(--accent);color:var(--accent)">🔢 Numérico</button>
+    <button class="btn btn-ghost" id="dtbtn-cat" onclick="setManualType('categorica',this)">🏷️ Categórico</button>
+  </div>
+  <div class="fld"><label>Título / Variável</label><input class="inp" id="m-title" placeholder="Ex: Altura dos alunos em cm" value="Dados da turma"></div>
+  <div class="fld" id="m-unit-field"><label>Unidade (para numérico)</label><input class="inp" id="m-unit" placeholder="Ex: cm, kg, °C"></div>
+  <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+    <div style="flex:1;min-width:160px">
+      <label style="font-size:11px;color:var(--text3);font-family:var(--font-m);display:block;margin-bottom:4px">NOME DO PARTICIPANTE</label>
+      <input class="inp" id="m-name" placeholder="Ex: Aluno 1">
+    </div>
+    <div style="flex:1;min-width:120px">
+      <label style="font-size:11px;color:var(--text3);font-family:var(--font-m);display:block;margin-bottom:4px">VALOR</label>
+      <input class="inp" id="m-value" placeholder="Ex: 170" id="m-value">
+    </div>
+    <button class="btn btn-gold" onclick="addManualEntry()">+ Adicionar</button>
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:var(--text3)">Ou cole múltiplos valores separados por vírgula:</div>
+  <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+    <input class="inp" id="m-bulk" placeholder="Ex: 165, 170, 175, 168, 182, 160" style="flex:1">
+    <button class="btn btn-blue" onclick="addBulkEntries()">+ Bulk</button>
+  </div>
+</div>
+<div class="card" id="m-entries-card" style="margin-top:14px">
+  <div class="card-label" style="display:flex;justify-content:space-between;align-items:center">
+    <span>Entradas (<span id="m-count">0</span>)</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" onclick="visualizarDados()" style="font-size:12px;padding:6px 14px">📊 Visualizar gráficos</button>
+      <button class="btn btn-red" onclick="limparDados()" style="font-size:12px;padding:6px 14px">🗑 Limpar</button>
+    </div>
+  </div>
+  <div id="m-entries-list" style="max-height:200px;overflow-y:auto;margin-top:8px">
+    <div style="color:var(--text3);font-size:13px">Nenhum dado ainda.</div>
+  </div>
+</div>
+`}
+
+let _manualType='numerica';
+function setManualType(t,btn){
+  _manualType=t;
+  document.querySelectorAll('[id^="dtbtn-"]').forEach(b=>{b.style.borderColor='';b.style.color='';});
+  btn.style.borderColor='var(--accent)';btn.style.color='var(--accent)';
+  document.getElementById('m-unit-field').style.display=t==='numerica'?'block':'none';
+  _localData.type=t;
+}
+
+function addManualEntry(){
+  const name=(document.getElementById('m-name')?.value?.trim())||('P'+(Object.keys(_localData.responses).length+1));
+  const val=document.getElementById('m-value')?.value?.trim();
+  if(!val){showToast('⚠️ Digite um valor!');return;}
+  const key=name+'_'+Date.now();
+  if(_manualType==='numerica'&&isNaN(parseFloat(val))){showToast('⚠️ Valor deve ser numérico!');return;}
+  _localData.responses[key]={value:_manualType==='numerica'?parseFloat(val):val,ts:Date.now()};
+  _localData.question=document.getElementById('m-title')?.value||'Dados manuais';
+  _localData.unit=document.getElementById('m-unit')?.value||'';
+  _localData.type=_manualType;
+  document.getElementById('m-name').value='';
+  document.getElementById('m-value').value='';
+  renderManualList();
+}
+
+function addBulkEntries(){
+  const raw=document.getElementById('m-bulk')?.value||'';
+  const vals=raw.split(',').map(v=>v.trim()).filter(v=>v);
+  if(!vals.length){showToast('⚠️ Nenhum valor encontrado!');return;}
+  vals.forEach((v,i)=>{
+    const key=`bulk_${i}_${Date.now()}`;
+    if(_manualType==='numerica'&&isNaN(parseFloat(v)))return;
+    _localData.responses[key]={value:_manualType==='numerica'?parseFloat(v):v,ts:Date.now()};
+  });
+  _localData.question=document.getElementById('m-title')?.value||'Dados manuais';
+  _localData.unit=document.getElementById('m-unit')?.value||'';
+  _localData.type=_manualType;
+  document.getElementById('m-bulk').value='';
+  renderManualList();showToast(`✅ ${vals.length} valores adicionados!`);
+}
+
+function renderManualList(){
+  const entries=Object.entries(_localData.responses);
+  document.getElementById('m-count').textContent=entries.length;
+  const el=document.getElementById('m-entries-list');
+  if(!el)return;
+  if(!entries.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">Nenhum dado ainda.</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>ID</th><th>Valor</th><th></th></tr></thead><tbody>`+
+    entries.slice(-20).reverse().map(([k,v])=>`
+      <tr><td style="font-family:var(--font-m);font-size:11px;color:var(--text3)">${k.split('_')[0]}</td>
+      <td style="font-weight:600">${v.value}</td>
+      <td><button onclick="removeEntry('${k}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px">✕</button></td></tr>
+    `).join('')+`</tbody></table>`;
+}
+
+function removeEntry(k){delete _localData.responses[k];renderManualList();}
+
+function limparDados(){_localData.responses={};renderManualList();showToast('🗑 Dados limpos!');}
+
+function visualizarDados(){
+  if(!Object.keys(_localData.responses).length){showToast('⚠️ Adicione dados primeiro!');return;}
+  S.activity=_localData;
+  showPanel('aovivo');
+  setTimeout(()=>renderLive(S.activity),100);
+}
+
+/* ═══════════════════════════════════════════════
+   FIREBASE LISTENERS
+═══════════════════════════════════════════════ */
+function listenAll(){
+  // Solo mode: skip Firebase listeners
+  if(S.role==='solo')return;
+  if(!window._db)return;
+
+  const u1=_onValue(_ref(db,`plstat/${S.sala}/activity`),snap=>{
+    const act=snap.val();S.activity=act;
+    if(S.role==='aluno'){const sb=document.getElementById('s-body');if(!sb||!sb.querySelector('.s-success'))renderStudentAct(act);}
+    if(S.role==='professor'&&S.activePanel==='aovivo')renderLive(act);
+  });
+  S.unsubs.push(()=>u1());
+  if(S.role==='professor'){
+    const u2=_onValue(_ref(db,`plstat/${S.sala}/alunos`),snap=>{
+      const a=snap.val()||{};const el=document.getElementById('student-list');
+      if(el)el.innerHTML=Object.keys(a).length?Object.keys(a).map(n=>`<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:14px">👤 ${n}</div>`).join(''):'<div style="color:var(--text3);font-size:13px">Aguardando alunos...</div>';
+    });
+    S.unsubs.push(()=>u2());
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+function showPanel(id){
+  S.activePanel=id;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  const p=document.getElementById('panel-'+id);if(p)p.classList.add('active');
+  document.querySelectorAll(`[data-p="${id}"]`).forEach(n=>n.classList.add('active'));
+  if(id==='aovivo'&&S.activity)renderLive(S.activity);
+  if(id==='descritiva')setTimeout(updateNormal,100);
+  if(id==='testes')setTimeout(drawDecisionTree,100);
+  if(id==='graficos')setTimeout(initGraficos,100);
+}
+
+function swtab(btn,tid){
+  const parent=btn.closest('.stabs').parentElement;
+  parent.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  parent.querySelectorAll('.stabp').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const t=document.getElementById(tid);if(t)t.classList.add('active');
+  if(S.activity?.responses){
+    const r=S.activity.responses;
+    requestAnimationFrame(()=>{
+      if(S.activity.type==='numerica')drawNum(r,S.activity.unit||'');
+      else if(S.activity.type==='categorica')drawCat(r);
+      else if(S.activity.type==='multipla')drawMC(S.activity,r);
+      else if(S.activity.type==='arrastar')drawConsensus(S.activity,r);
+    });
+  }
+}
+
+/* ─── EXPORT ─── */
+function dlPNG(id,name){
+  const c=document.getElementById(id);if(!c){showToast('Canvas não encontrado');return;}
+  const a=document.createElement('a');a.download=name+'.png';a.href=c.toDataURL('image/png');a.click();showToast('⬇ PNG baixado!');
+}
+
+async function dlCSV(){
+  let act=S.activity;
+  if(!act&&window._db){const snap=await _get(_ref(db,`plstat/${S.sala}/activity`));act=snap.val();}
+  if(!act){showToast('Sem dados.');return;}
+  const r=act.responses||{};
+  let csv='aluno,tipo,resposta,timestamp\n';
+  Object.entries(r).forEach(([n,v])=>{
+    const val=typeof v==='object'&&v.value!==undefined?v.value:typeof v==='object'?JSON.stringify(v).replace(/"/g,'""'):v;
+    csv+=`"${n}","${act.type}","${val}","${v.ts?new Date(v.ts).toISOString():''}"\n`;
+  });
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`penso_stat_sala${S.sala}_${Date.now()}.csv`;a.click();showToast('⬇ CSV baixado!');
+}
+
+/* ─── TOAST ─── */
+function showToast(msg,d=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+
+/* ─── KEYBOARD SHORTCUT ─── */
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('sc-login').classList.contains('active'))doLogin();});
+
+/* ─── INIT: load recent rooms on page open ─── */
+window.addEventListener('load',()=>{
+  // Professor is default role — show rejoin section and recent rooms immediately
+  loadRecentRooms();
+  // fld-rejoin starts visible since professor is default
+  const rejDiv=document.getElementById('fld-rejoin');
+  if(rejDiv)rejDiv.style.display='block';
+});
+</script>
+</body>
+</html>
